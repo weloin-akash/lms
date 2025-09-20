@@ -718,4 +718,18 @@ iframe {
 	--plyr-range-fill-background: white;
 	--plyr-video-control-background-hover: transparent;
 }
+
+/* Ensure Plyr settings button is visible */
+.plyr__controls .plyr__control[data-plyr="settings"] {
+	display: block !important;
+}
+
+/* Style the settings menu */
+.plyr__menu {
+	display: block;
+}
+
+.plyr__menu__container {
+	min-width: 150px;
+}
 </style>

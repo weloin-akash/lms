@@ -580,12 +580,27 @@ const setupPlyrForVideo = (video, players) => {
 		'current-time',
 		'mute',
 		'volume',
+		'settings',
 		'fullscreen',
 	]
 
 	const player = new Plyr(video, {
-		youtube: { noCookie: true },
+		youtube: { 
+			noCookie: true,
+			enablejsapi: 1,
+			origin: window.location.origin,
+			playerVars: {
+				enablejsapi: 1,
+				origin: window.location.origin,
+				modestbranding: 1,
+				rel: 0,
+				vq: 'auto',
+				iv_load_policy: 3,
+				showinfo: 0
+			}
+		},
 		controls: controls,
+		settings: ['speed'],
 		listeners: {
 			seek: function customSeekBehavior(e) {
 				const current_time = player.currentTime
