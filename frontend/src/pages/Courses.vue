@@ -1,23 +1,27 @@
 <template>
-	<header
-		class="sticky flex items-center justify-between top-0 z-10 border-b bg-surface-white px-3 py-2.5 sm:px-5"
-	>
-		<Breadcrumbs :items="breadcrumbs" />
-		<router-link
-			v-if="canCreateCourse()"
-			:to="{
-				name: 'CourseForm',
-				params: { courseName: 'new' },
-			}"
-		>
-			<Button variant="solid">
-				<template #prefix>
-					<Plus class="h-4 w-4 stroke-1.5" />
-				</template>
-				{{ __('Create') }}
-			</Button>
-		</router-link>
-	</header>
+	<AppHeader :title="__('Courses')" :description="__('Manage and create learning courses')">
+		<template #icon>
+			<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
+			</svg>
+		</template>
+		<template #actions>
+			<router-link
+				v-if="canCreateCourse()"
+				:to="{
+					name: 'CourseForm',
+					params: { courseName: 'new' },
+				}"
+			>
+				<Button class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 py-2 rounded-lg font-medium border-0">
+					<template #prefix>
+						<Plus class="h-4 w-4 stroke-1.5" />
+					</template>
+					{{ __('Create') }}
+				</Button>
+			</router-link>
+		</template>
+	</AppHeader>
 	<div class="p-5 pb-10">
 		<div
 			class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:items-center justify-between mb-5"
@@ -97,6 +101,7 @@ import { canCreateCourse } from '@/utils'
 import CourseCard from '@/components/CourseCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import router from '../router'
+import AppHeader from '@/components/AppHeader.vue'
 
 const user = inject('$user')
 const dayjs = inject('$dayjs')

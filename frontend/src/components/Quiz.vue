@@ -1,7 +1,18 @@
 <template>
 	<div v-if="quiz.data">
+		<!-- Quiz Instructions Card -->
 		<div
-			class="bg-surface-blue-2 space-y-2 py-2 px-3 mb-4 rounded-md text-sm text-ink-blue-2 leading-5"
+			class="bg-white rounded-xl shadow-sm border border-gray-200/50 p-6 mb-8"
+		>
+			<div class="flex items-center space-x-3 mb-4">
+				<div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+					<svg class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+				</div>
+				<h2 class="text-lg font-semibold text-gray-900">{{ __('Quiz Instructions') }}</h2>
+			</div>
+			<div class="space-y-3 text-sm text-gray-700"
 		>
 			<div v-if="inVideo">
 				{{ __('You will have to complete the quiz to continue the video') }}
@@ -53,35 +64,49 @@
 			</div>
 		</div>
 
-		<div v-if="quiz.data.duration" class="flex flex-col space-x-1 my-4">
-			<div class="mb-2">
-				<span class=""> {{ __('Time') }}: </span>
-				<span class="font-semibold">
-					{{ formatTimer(timer) }}
-				</span>
+		<!-- Timer Card -->
+		<div v-if="quiz.data.duration" class="bg-white rounded-xl shadow-sm border border-gray-200/50 p-6 mb-8">
+			<div class="flex items-center space-x-3 mb-4">
+				<div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+					<svg class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+				</div>
+				<div>
+					<h3 class="text-lg font-semibold text-gray-900">{{ __('Time Remaining') }}</h3>
+					<span class="text-2xl font-bold text-[#ed8e22]">
+						{{ formatTimer(timer) }}
+					</span>
+				</div>
 			</div>
 			<ProgressBar :progress="timerProgress" />
 		</div>
 
+		<!-- Quiz Start Card -->
 		<div v-if="activeQuestion == 0">
-			<div class="border text-center p-20 rounded-md">
-				<div class="font-semibold text-lg text-ink-gray-9">
-					{{ quiz.data.title }}
+			<div class="bg-white rounded-xl shadow-sm border border-gray-200/50 p-12 text-center">
+				<div class="w-16 h-16 mx-auto mb-6 bg-[#ed8e22] rounded-full flex items-center justify-center">
+					<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1a3 3 0 000-6h-1m0 6V4m0 6v6m6-10h1a3 3 0 000-6h-1m0 6V4m0 6v6" />
+					</svg>
 				</div>
-				<div class="flex items-center justify-center space-x-2 mt-4">
+				<h1 class="text-2xl font-bold text-gray-900 mb-4">
+					{{ quiz.data.title }}
+				</h1>
+				<div class="flex items-center justify-center space-x-4 mt-8">
 					<Button
 						v-if="
 							!quiz.data.max_attempts ||
 							attempts.data?.length < quiz.data.max_attempts
 						"
-						variant="solid"
+						class="bg-[#ed8e22] hover:bg-[#d47a1a] text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3 rounded-lg font-medium"
 						@click="startQuiz"
 					>
 						<span>
-							{{ inVideo ? __('Start the Quiz') : __('Start') }}
+							{{ inVideo ? __('Start the Quiz') : __('Start Quiz') }}
 						</span>
 					</Button>
-					<Button v-if="inVideo" @click="props.backToVideo()">
+					<Button v-if="inVideo" class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 hover:border-gray-400 shadow-sm hover:shadow transition-all duration-200 px-6 py-3 rounded-lg font-medium" @click="props.backToVideo()">
 						{{ __('Resume Video') }}
 					</Button>
 				</div>
@@ -90,7 +115,7 @@
 						quiz.data.max_attempts &&
 						attempts.data?.length >= quiz.data.max_attempts
 					"
-					class="leading-5 text-ink-gray-7"
+					class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm"
 				>
 					{{
 						__(
@@ -100,40 +125,52 @@
 				</div>
 			</div>
 		</div>
+		<!-- Question Display -->
 		<div v-else-if="!quizSubmission.data">
 			<div v-for="(question, qtidx) in questions">
 				<div
 					v-if="qtidx == activeQuestion - 1 && questionDetails.data"
-					class="border rounded-md p-5"
+					class="bg-white rounded-xl shadow-sm border border-gray-200/50 p-8"
 				>
-					<div class="flex justify-between">
-						<div class="text-sm text-ink-gray-5">
-							<span class="mr-2">
-								{{ __('Question {0}').format(activeQuestion) }}:
-							</span>
-							<span>
-								{{ getInstructions(questionDetails.data) }}
-							</span>
+					<!-- Question Header -->
+					<div class="flex items-center justify-between mb-6">
+						<div class="flex items-center space-x-3">
+							<div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+								<span class="text-sm font-bold text-[#ed8e22]">{{ activeQuestion }}</span>
+							</div>
+							<div>
+								<h3 class="text-lg font-semibold text-gray-900">{{ __('Question {0}', [activeQuestion]) }}</h3>
+								<p class="text-sm text-gray-600">{{ getInstructions(questionDetails.data) }}</p>
+							</div>
 						</div>
-						<div class="text-ink-gray-9 text-sm font-semibold item-left">
-							{{ question.marks }}
-							{{ question.marks == 1 ? __('Mark') : __('Marks') }}
+						<div class="text-right">
+							<div class="text-lg font-bold text-[#ed8e22]">{{ question.marks }}</div>
+							<div class="text-xs text-gray-500">{{ question.marks == 1 ? __('Mark') : __('Marks') }}</div>
 						</div>
 					</div>
-					<div
-						class="text-ink-gray-9 font-semibold mt-2 leading-5"
-						v-html="questionDetails.data.question"
-					></div>
-					<div v-if="questionDetails.data.type == 'Choices'" v-for="index in 4">
+
+					<!-- Question Content -->
+					<div class="mb-8">
+						<div class="bg-gray-50 rounded-lg p-4">
+							<div
+								class="text-gray-900 font-medium leading-relaxed"
+								v-html="questionDetails.data.question"
+							></div>
+						</div>
+					</div>
+					<!-- Multiple Choice Options -->
+					<div v-if="questionDetails.data.type == 'Choices'" class="space-y-4">
 						<label
+							v-for="index in 4"
 							v-if="questionDetails.data[`option_${index}`]"
-							class="flex items-center bg-surface-gray-3 rounded-md p-3 mt-4 w-full cursor-pointer focus:border-blue-600"
+							:key="index"
+							class="flex items-center bg-white rounded-lg border border-gray-200 hover:border-[#ed8e22] hover:bg-orange-50 p-4 cursor-pointer transition-all duration-200 group"
 						>
 							<input
 								v-if="!showAnswers.length && !questionDetails.data.multiple"
 								type="radio"
 								:name="encodeURIComponent(questionDetails.data.question)"
-								class="w-3.5 h-3.5 text-ink-gray-9 focus:ring-outline-gray-modals"
+								class="w-4 h-4 text-[#ed8e22] border-gray-300 focus:ring-[#ed8e22] focus:ring-2"
 								@change="markAnswer(index)"
 							/>
 
@@ -141,7 +178,7 @@
 								v-else-if="!showAnswers.length && questionDetails.data.multiple"
 								type="checkbox"
 								:name="encodeURIComponent(questionDetails.data.question)"
-								class="w-3.5 h-3.5 text-ink-gray-9 rounded-sm focus:ring-outline-gray-modals"
+								class="w-4 h-4 text-[#ed8e22] border-gray-300 rounded focus:ring-[#ed8e22] focus:ring-2"
 								@change="markAnswer(index)"
 							/>
 							<div
@@ -165,7 +202,7 @@
 								</div>
 							</div>
 							<span
-								class="ml-2"
+								class="ml-3 text-gray-900 group-hover:text-gray-700"
 								v-html="questionDetails.data[`option_${index}`]"
 							>
 							</span>
@@ -178,12 +215,14 @@
 							{{ questionDetails.data[`explanation_${index}`] }}
 						</div>
 					</div>
+					<!-- Text Input -->
 					<div v-else-if="questionDetails.data.type == 'User Input'">
 						<FormControl
 							v-model="possibleAnswer"
 							type="textarea"
 							:disabled="showAnswers.length ? true : false"
-							class="my-2"
+							class="rounded-lg border-gray-300 focus:border-[#ed8e22] focus:ring-[#ed8e22] transition-all duration-200"
+							placeholder="Enter your answer here..."
 						/>
 						<div v-if="showAnswers.length">
 							<Badge v-if="showAnswers[0]" :label="__('Correct')" theme="green">
@@ -309,6 +348,7 @@
 			>
 			</ListView>
 		</div>
+	</div>
 	</div>
 </template>
 <script setup>

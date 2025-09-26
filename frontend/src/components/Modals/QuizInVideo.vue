@@ -6,91 +6,93 @@
 			size: '2xl',
 		}"
 	>
+		<template #body-title>
+			<div class="flex items-center space-x-3 bg-[#fef9f3] px-6 py-4 border-b border-gray-200/50">
+				<div class="w-10 h-10 bg-[#ed8e22] rounded-xl flex items-center justify-center">
+					<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1a3 3 0 000-6h-1m0 6V4m0 6v6m6-10h1a3 3 0 000-6h-1m0 6V4m0 6v6" />
+					</svg>
+				</div>
+				<div>
+					<h2 class="text-xl font-bold text-gray-900">{{ __('Add quiz to this video') }}</h2>
+					<p class="text-gray-600 text-sm">Configure quiz timing and selection</p>
+				</div>
+			</div>
+		</template>
 		<template #body-content>
-			<div class="text-base">
-				<div class="flex items-end gap-4">
-					<FormControl
-						:label="__('Time in Video')"
-						v-model="quiz.time"
-						type="text"
-						placeholder="2:15"
-						class="flex-1"
-					/>
-					<Link
-						v-model="quiz.quiz"
-						:label="__('Quiz')"
-						doctype="LMS Quiz"
-						class="flex-1"
-					/>
-					<Button @click="addQuiz()" variant="solid">
-						<template #prefix>
-							<Plus class="w-4 h-4 stroke-1.5" />
-						</template>
-						{{ __('Add') }}
-					</Button>
+			<div class="px-6 py-6">
+				<!-- Add Quiz Form -->
+				<div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+					<div class="flex items-end gap-4">
+						<FormControl
+							:label="__('Time in Video')"
+							v-model="quiz.time"
+							type="text"
+							placeholder="2:15"
+							class="flex-1 rounded-lg border-gray-300 focus:border-[#ed8e22] focus:ring-[#ed8e22] transition-all duration-200"
+						/>
+						<Link
+							v-model="quiz.quiz"
+							:label="__('Quiz')"
+							doctype="LMS Quiz"
+							class="flex-1 rounded-lg border-gray-300 focus:border-[#ed8e22] focus:ring-[#ed8e22] transition-all duration-200"
+						/>
+						<Button @click="addQuiz()" class="bg-[#ed8e22] hover:bg-[#d47a1a] text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-2.5 rounded-lg font-medium">
+							<template #prefix>
+								<Plus class="w-4 h-4" />
+							</template>
+							{{ __('Add Quiz') }}
+						</Button>
+					</div>
 				</div>
 
-				<div class="mt-10 mb-5">
-					<div class="font-medium mb-4">
-						{{ __('Quizzes in this video') }}
+				<!-- Quizzes List -->
+				<div>
+					<div class="flex items-center space-x-3 mb-6">
+						<div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+							<svg class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+							</svg>
+						</div>
+						<h3 class="text-lg font-semibold text-gray-900">{{ __('Quizzes in this video') }}</h3>
 					</div>
-					<ListView
-						v-if="allQuizzes.length"
-						:columns="columns"
-						:rows="allQuizzes"
-						row-key="quiz"
-						:options="{
-							showTooltip: false,
-						}"
-					>
-						<ListHeader
-							class="mb-2 grid items-center space-x-4 rounded bg-surface-gray-2 p-2"
+
+					<div v-if="allQuizzes.length" class="space-y-4">
+						<div 
+							v-for="(quiz, index) in allQuizzes" 
+							:key="quiz.quiz"
+							class="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200 group"
 						>
-							<ListHeaderItem :item="item" v-for="item in columns">
-								<template #prefix="{ item }">
-									<component
-										v-if="item.icon"
-										:is="item.icon"
-										class="h-4 w-4 stroke-1.5 ml-4"
-									/>
-								</template>
-							</ListHeaderItem>
-						</ListHeader>
-
-						<ListRows>
-							<ListRow :row="row" v-for="row in allQuizzes">
-								<template #default="{ column, item }">
-									<ListRowItem
-										:item="row[column.key as keyof Quiz]"
-										:align="column.align"
+							<div class="flex items-center justify-between">
+								<div class="flex-1">
+									<div class="flex items-center space-x-3 mb-2">
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-[#ed8e22]">
+											{{ formatTimestamp(quiz.time) }}
+										</span>
+										<span class="text-sm font-medium text-gray-900">{{ quiz.quiz }}</span>
+									</div>
+								</div>
+								<div class="flex items-center space-x-2">
+									<Button 
+										variant="ghost" 
+										size="sm"
+										class="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+										@click="removeQuiz([quiz.quiz], () => {})"
 									>
-										<div v-if="column.key == 'time'" class="leading-5 text-sm">
-											{{ formatTimestamp(row[column.key as keyof Quiz]) }}
-										</div>
-										<div v-else class="leading-5 text-sm">
-											{{ row[column.key as keyof Quiz] }}
-										</div>
-									</ListRowItem>
-								</template>
-							</ListRow>
-						</ListRows>
-
-						<ListSelectBanner>
-							<template #actions="{ unselectAll, selections }">
-								<div class="flex gap-2">
-									<Button
-										variant="ghost"
-										@click="removeQuiz(selections, unselectAll)"
-									>
-										<Trash2 class="h-4 w-4 stroke-1.5" />
+										<Trash2 class="h-4 w-4 text-red-500" />
 									</Button>
 								</div>
-							</template>
-						</ListSelectBanner>
-					</ListView>
+							</div>
+						</div>
+					</div>
 
-					<div v-else class="text-ink-gray-5 italic text-xs">
-						{{ __('No quizzes added yet.') }}
+					<div v-else class="text-center py-8">
+						<div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+							<svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+							</svg>
+						</div>
+						<p class="text-gray-500 text-sm">{{ __('No quizzes added yet.') }}</p>
 					</div>
 				</div>
 			</div>

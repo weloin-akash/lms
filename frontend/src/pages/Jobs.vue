@@ -1,29 +1,30 @@
 <template>
 	<div class="">
-		<header
-			class="sticky top-0 z-10 flex items-center justify-between border-b bg-surface-white px-3 py-2.5 sm:px-5"
-		>
-			<Breadcrumbs
-				class="h-7"
-				:items="[{ label: __('Jobs'), route: { name: 'Jobs' } }]"
-			/>
-			<router-link
-				v-if="user.data?.name"
-				:to="{
-					name: 'JobForm',
-					params: {
-						jobName: 'new',
-					},
-				}"
-			>
-				<Button v-if="!readOnlyMode" variant="solid">
-					<template #prefix>
-						<Plus class="h-4 w-4" />
-					</template>
-					{{ __('New Job') }}
-				</Button>
-			</router-link>
-		</header>
+		<AppHeader :title="__('Jobs')" :description="__('Manage and create job opportunities')">
+			<template #icon>
+				<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+				</svg>
+			</template>
+			<template #actions>
+				<router-link
+					v-if="user.data?.name"
+					:to="{
+						name: 'JobForm',
+						params: {
+							jobName: 'new',
+						},
+					}"
+				>
+					<Button v-if="!readOnlyMode" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-2.5 rounded-lg font-medium border-0">
+						<template #prefix>
+							<Plus class="h-4 w-4" />
+						</template>
+						{{ __('New Job') }}
+					</Button>
+				</router-link>
+			</template>
+		</AppHeader>
 		<div>
 			<div
 				class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:items-center justify-between w-full md:w-4/5 mx-auto p-5"
@@ -100,6 +101,7 @@ import { inject, computed, ref, onMounted, watch } from 'vue'
 import JobCard from '@/components/JobCard.vue'
 import Link from '@/components/Controls/Link.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import AppHeader from '@/components/AppHeader.vue'
 
 const user = inject('$user')
 const jobType = ref(null)

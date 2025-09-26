@@ -52,67 +52,106 @@
 					</div>
 				</div>
 			</div>
-			<!-- Modern Card-based Submission List -->
-			<div v-if="submissions.loading || submissions.data?.length" class="space-y-4">
-				<div
-					v-for="row in submissions.data"
-					:key="row.name"
-					class="bg-white rounded-xl shadow-sm border border-gray-200/50 hover:shadow-md hover:border-gray-300/50 transition-all duration-200 overflow-hidden group cursor-pointer"
+			<!-- Submission List with Built-in Selection -->
+							<div v-if="submissions.loading || submissions.data?.length" class="bg-white rounded-xl shadow-sm border border-gray-200/50 overflow-hidden">
+				<ListView
+					:columns="submissionColumns"
+					:rows="submissions.data"
+					row-key="name"
+					:options="{ showTooltip: false, selectable: true }"
+					class="modern-submission-list"
 				>
-					<router-link
-						:to="{
-							name: 'AssignmentSubmission',
-							params: {
-								assignmentID: row.assignment,
-								submissionName: row.name,
-							},
-						}"
-						class="block p-6 no-underline"
-					>
-						<div class="flex items-start justify-between">
-							<div class="flex-1 min-w-0">
-								<div class="flex items-center space-x-3 mb-3">
-									<div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-										<svg class="w-5 h-5 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-										</svg>
-									</div>
-									<div class="flex-1">
-										<h3 class="text-lg font-semibold text-gray-900 group-hover:text-[#ed8e22] transition-colors duration-200 mb-1">
-											{{ row.member_name }}
-										</h3>
-										<p class="text-sm text-gray-600">{{ row.assignment_title }}</p>
-									</div>
+					<ListHeader class="border-b border-gray-200 bg-gray-50 py-3">
+						<ListHeaderItem :item="item" v-for="item in submissionColumns">
+							<template #prefix="{ item }">
+								<div class="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center mr-2">
+									<svg v-if="item.key === 'member_name'" class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+									</svg>
+									<svg v-else-if="item.key === 'assignment_title'" class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+									</svg>
+									<svg v-else-if="item.key === 'status'" class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+									</svg>
+									<svg v-else class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+									</svg>
 								</div>
-								<div class="flex items-center space-x-4 text-sm text-gray-500">
-									<div class="flex items-center">
-										<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-										</svg>
-										Submitted {{ row.creation }}
-									</div>
-								</div>
-							</div>
-							
-							<div class="flex items-center space-x-3 ml-4">
-								<!-- Status Badge -->
-								<div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border"
-									:class="{
-										'bg-green-100 text-green-800 border-green-200': getStatusTheme(row.status) === 'green',
-										'bg-blue-100 text-blue-800 border-blue-200': getStatusTheme(row.status) === 'blue',
-										'bg-red-100 text-red-800 border-red-200': getStatusTheme(row.status) === 'red'
-									}"
+							</template>
+						</ListHeaderItem>
+					</ListHeader>
+					<ListRows>
+						<router-link
+							v-for="row in submissions.data"
+							:key="row.name"
+							:to="{
+								name: 'AssignmentSubmission',
+								params: {
+									assignmentID: row.assignment,
+									submissionName: row.name,
+								},
+							}"
+							class="block"
+						>
+							<ListRow :row="row" class="hover:bg-gray-50 transition-colors duration-200 group border-b border-gray-100 py-3">
+								<template #default="{ column, item }">
+									<ListRowItem :item="row[column.key]" :align="column.align">
+										<div v-if="column.key == 'member_name'" class="flex items-center space-x-2">
+											<div class="w-6 h-6 bg-orange-100 rounded flex items-center justify-center flex-shrink-0">
+												<svg class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+												</svg>
+											</div>
+											<span class="font-medium text-gray-900 group-hover:text-[#ed8e22] transition-colors">{{ item }}</span>
+										</div>
+										<div v-else-if="column.key == 'assignment_title'" class="flex items-center space-x-2">
+											<div class="w-6 h-6 bg-orange-100 rounded flex items-center justify-center flex-shrink-0">
+												<svg class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+												</svg>
+											</div>
+											<span class="font-medium text-gray-900">{{ item }}</span>
+										</div>
+										<div v-else-if="column.key == 'status'" class="text-center">
+											<div class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border"
+												:class="{
+													'bg-green-100 text-green-800 border-green-200': getStatusTheme(item) === 'green',
+													'bg-blue-100 text-blue-800 border-blue-200': getStatusTheme(item) === 'blue',
+													'bg-red-100 text-red-800 border-red-200': getStatusTheme(item) === 'red'
+												}"
+											>
+												{{ item }}
+											</div>
+										</div>
+										<div v-else-if="column.key == 'creation'" class="text-center">
+											<span class="text-sm text-gray-700">{{ item }}</span>
+										</div>
+										<div v-else>{{ item }}</div>
+									</ListRowItem>
+								</template>
+							</ListRow>
+						</router-link>
+					</ListRows>
+					<ListSelectBanner>
+						<template #actions="{ unselectAll, selections }">
+							<div class="flex gap-2">
+								<Button
+									variant="ghost"
+									@click="deleteSubmissions(selections, unselectAll)"
+									class="text-red-600 hover:bg-red-50"
 								>
-									{{ row.status }}
-								</div>
-								
-								<svg class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-								</svg>
+									<template #prefix>
+										<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+										</svg>
+									</template>
+									{{ __('Delete') }}
+								</Button>
 							</div>
-						</div>
-					</router-link>
-				</div>
+						</template>
+					</ListSelectBanner>
+				</ListView>
 			</div>
 			<!-- Modern Empty State -->
 			<div v-else class="bg-white rounded-xl shadow-sm border border-gray-200/50 p-12 text-center">
@@ -134,6 +173,7 @@
 import {
 	Badge,
 	Breadcrumbs,
+	Button,
 	createListResource,
 	FormControl,
 	ListView,
@@ -142,6 +182,8 @@ import {
 	ListRows,
 	ListRow,
 	ListRowItem,
+	ListSelectBanner,
+	toast,
 	usePageMeta,
 } from 'frappe-ui'
 import { computed, inject, onMounted, ref, watch } from 'vue'
@@ -224,29 +266,37 @@ const reloadSubmissions = () => {
 const submissionColumns = computed(() => {
 	return [
 		{
-			label: 'Member',
+			label: __('Student'),
 			key: 'member_name',
-			width: 1,
+			width: 2,
 		},
 		{
-			label: 'Assignment',
+			label: __('Assignment'),
 			key: 'assignment_title',
 			width: 2,
 		},
 		{
-			label: 'Submitted',
+			label: __('Submitted'),
 			key: 'creation',
 			width: 1,
-			align: 'left',
+			align: 'center',
 		},
 		{
-			label: 'Status',
+			label: __('Status'),
 			key: 'status',
 			width: 1,
 			align: 'center',
 		},
 	]
 })
+
+const deleteSubmissions = (selections, unselectAll) => {
+	Array.from(selections).forEach(async (submissionName) => {
+		await submissions.delete.submit(submissionName)
+	})
+	unselectAll()
+	toast.success(__('Submissions deleted successfully'))
+}
 
 const statusOptions = computed(() => {
 	return [

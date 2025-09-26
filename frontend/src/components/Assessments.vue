@@ -17,7 +17,7 @@
 				<Button 
 					v-if="canAddAssessments()" 
 					@click="showModal = true"
-					class="bg-[#ed8e22] hover:bg-[#d47a1a] text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 py-2 rounded-lg font-medium"
+					class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-2.5 rounded-lg font-medium !border-0"
 				>
 					<template #prefix>
 						<Plus class="h-4 w-4" />
@@ -27,81 +27,103 @@
 			</div>
 		</div>
 		<!-- Assessments Content -->
-		<div v-if="assessments.data?.length" class="p-6">
-			<div class="space-y-4">
-				<div
+		<ListView
+			v-if="assessments.data?.length"
+			:columns="assessmentColumns"
+			:rows="assessments.data"
+			row-key="name"
+			:options="{ showTooltip: false, selectable: canAddAssessments() }"
+			class="modern-assessment-list"
+		>
+			<ListHeader class="border-b border-gray-200 bg-gray-50 py-3">
+				<ListHeaderItem :item="item" v-for="item in assessmentColumns">
+					<template #prefix="{ item }">
+						<div class="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center mr-2">
+							<svg v-if="item.key === 'title'" class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+							</svg>
+							<svg v-else-if="item.key === 'assessment_type'" class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+							</svg>
+							<svg v-else class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+							</svg>
+						</div>
+					</template>
+				</ListHeaderItem>
+			</ListHeader>
+			<ListRows>
+				<router-link
 					v-for="row in assessments.data"
 					:key="row.name"
-					class="bg-gray-50 rounded-lg border border-gray-200/50 hover:border-gray-300/50 hover:shadow-md transition-all duration-200 overflow-hidden group cursor-pointer"
-					@click="() => handleRowClick(row)"
+					:to="getRowRoute(row)"
+					class="block"
 				>
-					<div class="p-6">
-						<div class="flex items-start justify-between">
-							<div class="flex-1 min-w-0">
-								<div class="flex items-center space-x-3 mb-3">
-									<div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-										<svg v-if="row.assessment_type === 'LMS Assignment'" class="w-5 h-5 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<ListRow :row="row" class="hover:bg-gray-50 transition-colors duration-200 group border-b border-gray-100 py-3">
+						<template #default="{ column, item }">
+							<ListRowItem :item="row[column.key]" :align="column.align">
+								<div v-if="column.key == 'title'" class="flex items-center space-x-3">
+									<div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+										<svg v-if="row.assessment_type === 'LMS Assignment'" class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
 										</svg>
-										<svg v-else-if="row.assessment_type === 'LMS Quiz'" class="w-5 h-5 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<svg v-else-if="row.assessment_type === 'LMS Quiz'" class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 										</svg>
-										<svg v-else class="w-5 h-5 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<svg v-else class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
 										</svg>
 									</div>
-									<div class="flex-1">
-										<h4 class="text-lg font-semibold text-gray-900 group-hover:text-[#ed8e22] transition-colors duration-200 mb-1">
-											{{ row.title }}
-										</h4>
-										<div class="flex items-center space-x-2">
-											<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-[#ed8e22]">
-												{{ getAssessmentTypeLabel(row.assessment_type) }}
-											</span>
-										</div>
+									<span class="font-medium text-gray-900 group-hover:text-[#ed8e22] transition-colors">{{ item }}</span>
+								</div>
+								<div v-else-if="column.key == 'assessment_type'" class="text-center">
+									<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-[#ed8e22]">
+										{{ getAssessmentTypeLabel(item) }}
+									</span>
+								</div>
+								<div v-else-if="column.key == 'status'" class="text-center">
+									<div v-if="!user.data?.is_moderator && item && isNaN(item)">
+										<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border"
+											:class="{
+												'bg-green-100 text-green-800 border-green-200': getStatusTheme(item) === 'green',
+												'bg-blue-100 text-blue-800 border-blue-200': getStatusTheme(item) === 'blue',
+												'bg-red-100 text-red-800 border-red-200': getStatusTheme(item) === 'red',
+												'bg-orange-100 text-orange-800 border-orange-200': getStatusTheme(item) === 'orange'
+											}"
+										>
+											{{ item }}
+										</span>
 									</div>
-								</div>
-							</div>
-							
-							<div class="flex items-center space-x-3 ml-4">
-								<!-- Status Badge -->
-								<div v-if="!user.data?.is_moderator && row.status && isNaN(row.status)" class="flex items-center">
-									<div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border"
-										:class="{
-											'bg-green-100 text-green-800 border-green-200': getStatusTheme(row.status) === 'green',
-											'bg-blue-100 text-blue-800 border-blue-200': getStatusTheme(row.status) === 'blue',
-											'bg-red-100 text-red-800 border-red-200': getStatusTheme(row.status) === 'red',
-											'bg-orange-100 text-orange-800 border-orange-200': getStatusTheme(row.status) === 'orange'
-										}"
-									>
-										{{ row.status }}
+									<div v-else-if="!user.data?.is_moderator && item && !isNaN(item)">
+										<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">
+											{{ item }}%
+										</span>
 									</div>
+									<span v-else class="text-sm text-gray-500">-</span>
 								</div>
-								<div v-else-if="!user.data?.is_moderator && row.status && !isNaN(row.status)" class="flex items-center">
-									<div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">
-										{{ row.status }}%
-									</div>
-								</div>
-								
-								<!-- Action Button for Moderators -->
-								<div v-if="!user.data?.is_student && user.data?.is_moderator" class="flex items-center space-x-2">
-									<input 
-										type="checkbox" 
-										:value="row.name"
-										@change="handleSelection($event, row.name)"
-										class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-									/>
-								</div>
-								
-								<svg class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-								</svg>
-							</div>
-						</div>
+								<div v-else>{{ item }}</div>
+							</ListRowItem>
+						</template>
+					</ListRow>
+				</router-link>
+			</ListRows>
+			<ListSelectBanner>
+				<template #actions="{ unselectAll, selections }">
+					<div class="flex gap-2">
+						<Button
+							variant="ghost"
+							@click="removeAssessments(selections, unselectAll)"
+							class="text-red-600 hover:bg-red-50"
+						>
+							<template #prefix>
+								<Trash2 class="w-4 h-4" />
+							</template>
+							{{ __('Delete') }}
+						</Button>
 					</div>
-				</div>
-			</div>
-		</div>
+				</template>
+			</ListSelectBanner>
+		</ListView>
 		
 		<!-- Empty State -->
 		<div v-else class="p-12 text-center">
@@ -135,14 +157,13 @@ import {
 	Button,
 	Badge,
 } from 'frappe-ui'
-import { inject, ref } from 'vue'
+import { inject, ref, computed } from 'vue'
 import AssessmentModal from '@/components/Modals/AssessmentModal.vue'
 import { Plus, Trash2 } from 'lucide-vue-next'
 
 const user = inject('$user')
 const showModal = ref(false)
 const readOnlyMode = window.read_only_mode
-const selectedItems = ref(new Set())
 
 const props = defineProps({
 	batch: {
@@ -270,30 +291,31 @@ const canAddAssessments = () => {
 	return user.data?.is_moderator || user.data?.is_evaluator
 }
 
-const getAssessmentColumns = () => {
+const assessmentColumns = computed(() => {
 	let columns = [
 		{
-			label: 'Assessment',
+			label: __('Assessment'),
 			key: 'title',
-			width: '25rem',
+			width: 2,
 		},
 		{
-			label: 'Type',
+			label: __('Type'),
 			key: 'assessment_type',
-			width: '15rem',
+			width: 1,
+			align: 'center',
 		},
 	]
 
 	if (!user.data?.is_moderator) {
 		columns.push({
-			label: 'Status/Percentage',
+			label: __('Status/Percentage'),
 			key: 'status',
-			align: 'left',
-			width: '10rem',
+			align: 'center',
+			width: 1,
 		})
 	}
 	return columns
-}
+})
 
 const getStatusTheme = (status) => {
 	if (status === 'Pass' || status === 'Passed') {
@@ -315,19 +337,4 @@ const getAssessmentTypeLabel = (type) => {
 	}
 }
 
-const handleRowClick = (row) => {
-	const route = getRowRoute(row)
-	if (route) {
-		// Navigate to the route (you may need to implement this based on your router setup)
-		window.location.href = route.name // This is a simplified example
-	}
-}
-
-const handleSelection = (event, itemName) => {
-	if (event.target.checked) {
-		selectedItems.value.add(itemName)
-	} else {
-		selectedItems.value.delete(itemName)
-	}
-}
 </script>

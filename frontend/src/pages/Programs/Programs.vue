@@ -1,15 +1,19 @@
 <template>
-	<header
-		class="sticky top-0 z-10 flex items-center justify-between border-b bg-surface-white px-3 py-2.5 sm:px-5"
-	>
-		<Breadcrumbs :items="breadcrumbs" />
-		<Button v-if="canCreateProgram()" @click="openForm('new')" variant="solid">
-			<template #prefix>
-				<Plus class="h-4 w-4 stroke-1.5" />
-			</template>
-			{{ __('New') }}
-		</Button>
-	</header>
+	<AppHeader :title="__('Programs')" :description="__('Manage and create learning programs')">
+		<template #icon>
+			<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+			</svg>
+		</template>
+		<template #actions>
+			<Button v-if="canCreateProgram()" @click="openForm('new')" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 py-2 rounded-lg font-medium border-0">
+				<template #prefix>
+					<Plus class="h-4 w-4 stroke-1.5" />
+				</template>
+				{{ __('New') }}
+			</Button>
+		</template>
+	</AppHeader>
 	<div v-if="programs.data?.length && !isStudent" class="py-10 w-3/4 mx-auto">
 		<div class="text-lg font-semibold text-ink-gray-9 mb-5">
 			{{
@@ -61,6 +65,7 @@ import { sessionStore } from '@/stores/session'
 import ProgramForm from '@/pages/Programs/ProgramForm.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import StudentPrograms from '@/pages/Programs/StudentPrograms.vue'
+import AppHeader from '@/components/AppHeader.vue'
 
 const { brand } = sessionStore()
 const user = inject('$user')

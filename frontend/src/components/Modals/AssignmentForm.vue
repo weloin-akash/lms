@@ -83,9 +83,8 @@
 						</Button>
 					</router-link>
 					<Button 
-						variant="solid" 
 						@click="saveAssignment"
-						class="bg-[#ed8e22] hover:bg-[#d47a1a] text-white shadow-md hover:shadow-lg transition-all duration-200 px-6 py-2 rounded-lg font-medium"
+						class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-md hover:shadow-lg transition-all duration-200 px-6 py-2 rounded-lg font-medium border-0"
 					>
 						{{ __('Save') }}
 					</Button>

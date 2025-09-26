@@ -16,4 +16,5 @@
 </template>
 <script setup>
 import AppSidebar from './AppSidebar.vue'
+import TopHeader from './TopHeader.vue'
 </script>

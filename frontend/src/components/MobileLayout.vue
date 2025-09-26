@@ -62,6 +62,7 @@ import { sessionStore } from '@/stores/session'
 import { useSettings } from '@/stores/settings'
 import { usersStore } from '@/stores/user'
 import * as icons from 'lucide-vue-next'
+import TopHeader from './TopHeader.vue'
 
 const { logout, user } = sessionStore()
 let { isLoggedIn } = sessionStore()

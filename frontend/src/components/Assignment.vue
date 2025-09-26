@@ -1,14 +1,14 @@
 <template>
 	<div
 		v-if="assignment.data"
-		class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100/50"
+		class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100/50 lg:h-screen h-full overflow-y-auto lg:overflow-hidden"
 		:class="{ 'rounded-xl overflow-hidden shadow-lg border border-gray-200/50': !showTitle }"
 	>
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+		<div class="flex flex-col lg:grid lg:grid-cols-2 gap-0 lg:h-full">
 			<!-- Question Section with Modern Card Design -->
 			<div
 				class="bg-white/80 backdrop-blur-sm border-0 lg:border-r border-gray-200/50 overflow-y-auto"
-				:class="{ 'h-[calc(100vh-3.2rem)] p-6': showTitle, 'h-full p-8': !showTitle }"
+				:class="{ 'h-full lg:h-[calc(100vh-3.2rem)] pr-2 py-8 pl-4': showTitle, 'lg:h-full p-8': !showTitle }"
 			>
 				<!-- Modern Header -->
 				<div v-if="showTitle" class="mb-8">
@@ -50,7 +50,7 @@
 			</div>
 
 			<!-- Submission Section with Modern Design -->
-			<div class="bg-white/80 backdrop-blur-sm p-6 lg:p-8 space-y-6">
+			<div class="bg-white/80 backdrop-blur-sm p-4 sm:p-6 lg:pr-6 lg:pl-0 lg:py-8 space-y-6">
 				<!-- Submission Header -->
 				<div class="bg-white rounded-xl shadow-sm border border-gray-200/50 p-6">
 					<div class="flex items-center justify-between mb-6">
@@ -80,9 +80,8 @@
 								{{ submissionResource.doc?.status }}
 							</div>
 							<Button 
-								variant="solid" 
 								@click="submitAssignment()"
-								class="bg-[#ed8e22] hover:bg-[#d47a1a] text-white shadow-md hover:shadow-lg transition-all duration-200 px-4 h-9 rounded-lg text-sm font-medium"
+								class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-md hover:shadow-lg transition-all duration-200 px-4 h-9 rounded-lg text-sm font-medium border-0"
 							>
 								<!-- <template #prefix>
 									<Plus class="w-4 h-4" />
@@ -261,8 +260,7 @@
 						</div>
 						<Button
 							@click="showSkillModal = true"
-							variant="solid"
-							class="w-16 h-16 rounded-full bg-[#ed8e22] hover:bg-[#d47a1a] text-white shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center p-0"
+							class="w-16 h-16 rounded-full !bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center p-0 border-0"
 						>
 							<Plus class="w-6 h-6" />
 						</Button>
@@ -273,7 +271,8 @@
 							:key="skill.name"
 							class="bg-gray-50 rounded-lg p-4 border border-gray-100 hover:border-gray-200 transition-colors duration-200"
 						>
-							<div class="flex items-center justify-between">
+							<!-- Desktop Layout: Horizontal -->
+							<div class="hidden md:flex items-center justify-between">
 								<div class="flex-1">
 									<div class="text-sm font-semibold text-gray-900 mb-1">
 										{{ skill.data || skill.name }}
@@ -330,6 +329,73 @@
 									>
 										<Check v-if="skillScores[skill.name] === 'N/A'" class="w-4 h-4" />
 										<Ban v-else class="w-4 h-4" />
+									</button>
+								</div>
+							</div>
+
+							<!-- Mobile Layout: Vertical Stack -->
+							<div class="md:hidden space-y-3">
+								<!-- Skill Name -->
+								<div class="text-sm font-semibold text-gray-900">
+									{{ skill.data || skill.name }}
+								</div>
+								
+								<!-- Description -->
+								<div class="text-xs text-gray-600 leading-relaxed">
+									{{ skill.description || 'No description provided' }}
+								</div>
+								
+								<!-- Stars and Controls -->
+								<div class="flex items-center justify-between pt-2">
+									<div class="flex items-center space-x-3">
+										<!-- Stars or N/A display -->
+										<div v-if="skillScores[skill.name] === 'N/A'" class="flex items-center">
+											<span class="text-gray-400 font-mono text-sm tracking-wider"> - - - - - </span>
+										</div>
+										<div v-else class="flex items-center space-x-1">
+											<button
+												v-for="star in 5"
+												:key="star"
+												@click="setSkillScore(skill.name, star)"
+												@mouseenter="hoverStar = { skill: skill.name, star: star }"
+												@mouseleave="hoverStar = null"
+												class="p-1 rounded-lg transition-all duration-200 hover:bg-white hover:shadow-sm"
+												type="button"
+											>
+												<Star
+													:size="16"
+													:class="[
+														'transition-all duration-200',
+														isStarFilled(skill.name, star) 
+															? 'fill-[#ed8e22] stroke-[#ed8e22] text-[#ed8e22]' 
+															: 'stroke-gray-300 hover:stroke-[#ed8e22] text-gray-300 hover:text-[#ed8e22]'
+													]"
+												/>
+											</button>
+										</div>
+										
+										<!-- Score display -->
+										<div class="text-center">
+											<span class="text-xs font-medium text-gray-600 bg-white px-2 py-1 rounded-md border">
+												{{ skillScores[skill.name] === 'N/A' ? 'N/A' : (skillScores[skill.name] || 0) + '/5' }}
+											</span>
+										</div>
+									</div>
+									
+									<!-- N/A toggle button -->
+									<button
+										@click="setSkillNotApplicable(skill.name)"
+										:class="[
+											'p-1.5 rounded-lg transition-all duration-200 border',
+											skillScores[skill.name] === 'N/A' 
+												? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200' 
+												: 'bg-white text-gray-400 border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
+										]"
+										type="button"
+										:title="skillScores[skill.name] === 'N/A' ? __('Enable Rating') : __('Mark as Not Applicable')"
+									>
+										<Check v-if="skillScores[skill.name] === 'N/A'" class="w-3 h-3" />
+										<Ban v-else class="w-3 h-3" />
 									</button>
 								</div>
 							</div>
@@ -403,7 +469,7 @@
 		<template #body-content>
 			<div class="space-y-6 p-2">
 				<div class="text-center mb-6">
-					<div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+					<div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-[#ed8e22] to-[#d47a1a] rounded-full flex items-center justify-center">
 						<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
 						</svg>
@@ -419,7 +485,7 @@
 							type="text"
 							placeholder="e.g., Problem Solving, Critical Thinking..."
 							:required="true"
-							class="rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+							class="rounded-lg border-gray-300 focus:border-[#ed8e22] focus:ring-[#ed8e22] transition-all duration-200"
 						/>
 					</div>
 					<div>
@@ -429,7 +495,7 @@
 							type="textarea"
 							placeholder="Describe what this skill represents and how it should be evaluated..."
 							:rows="3"
-							class="rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+							class="rounded-lg border-gray-300 focus:border-[#ed8e22] focus:ring-[#ed8e22] transition-all duration-200"
 						/>
 					</div>
 				</div>
@@ -445,10 +511,9 @@
 					{{ __('Cancel') }}
 				</Button>
 				<Button 
-					variant="solid" 
 					@click="createNewSkill"
 					:disabled="!newSkillName"
-					class="bg-[#ed8e22] hover:bg-[#d47a1a] disabled:bg-gray-400 text-white shadow-md hover:shadow-lg transition-all duration-200 px-4 py-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+					class="!bg-[#ed8e22] hover:!bg-[#d47a1a] disabled:!bg-gray-400 text-white shadow-md hover:shadow-lg transition-all duration-200 px-4 py-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed border-0"
 				>
 					<template #prefix>
 						<Plus class="w-4 h-4" />
