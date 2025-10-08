@@ -1,6 +1,6 @@
 <template>
 	<div v-if="lesson.data" class="">
-		<header
+		<!-- <header
 			class="sticky top-0 z-10 flex items-center justify-between border-b bg-surface-white px-3 py-2.5 sm:px-5"
 		>
 			<Breadcrumbs class="h-7" :items="breadcrumbs" />
@@ -64,7 +64,73 @@
 					</Button>
 				</router-link>
 			</div>
-		</header>
+		</header> -->
+		<AppHeader>
+			<template #breadcrumbs>
+				<Breadcrumbs :items="breadcrumbs" />
+			</template>
+			<template #actions>
+				<Tooltip v-if="canGoZen()" :text="__('Zen Mode')">
+					<Button @click="goFullScreen()">
+						<template #icon>
+							<Focus class="w-4 h-4 stroke-2" />
+						</template>
+					</Button>
+				</Tooltip>
+				<Button v-if="canSeeStats()" @click="showVideoStats()">
+					<template #icon>
+						<TrendingUp class="size-4 stroke-1.5" />
+					</template>
+				</Button>
+				<CertificationLinks :courseName="courseName" />
+				<Button v-if="lesson.data.prev" @click="switchLesson('prev')">
+					<template #prefix>
+						<ChevronLeft class="w-4 h-4 stroke-1" />
+					</template>
+					<span>
+						{{ __('Previous') }}
+					</span>
+				</Button>
+
+				<router-link
+					v-if="allowEdit()"
+					:to="{
+						name: 'LessonForm',
+						params: {
+							courseName: courseName,
+							chapterNumber: props.chapterNumber,
+							lessonNumber: props.lessonNumber,
+						},
+					}"
+				>
+					<Button>
+						{{ __('Edit') }}
+					</Button>
+				</router-link>
+
+				<Button v-if="lesson.data.next" @click="switchLesson('next')">
+					<template #suffix>
+						<ChevronRight class="w-4 h-4 stroke-1" />
+					</template>
+					<span>
+						{{ __('Next') }}
+					</span>
+				</Button>
+
+				<router-link
+					v-else
+					:to="{
+						name: 'CourseDetail',
+						params: { courseName: courseName },
+					}"
+				>
+					<Button>
+						{{ __('Back to Course') }}
+					</Button>
+				</router-link>
+			</template>
+		</AppHeader>
+
 		<div class="grid md:grid-cols-[70%,30%] h-screen">
 			<div v-if="lesson.data.no_preview" class="border-r">
 				<div class="shadow rounded-md w-3/4 mt-10 mx-auto text-center p-4">

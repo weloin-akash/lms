@@ -44,7 +44,6 @@
 					/>
 					<div class="w-full lg:min-w-0 lg:w-32 xl:w-40">
 						<Select
-							v-if="categories.length"
 							v-model="currentCategory"
 							:options="categories"
 							:placeholder="__('Category')"
@@ -120,12 +119,6 @@ onMounted(() => {
 	setFiltersFromQuery()
 	updateCourses()
 	getCourseCount()
-	categories.value = [
-		{
-			label: '',
-			value: null,
-		},
-	]
 })
 
 const setFiltersFromQuery = () => {
@@ -141,17 +134,20 @@ const courses = createListResource({
 	cache: ['courses', user.data?.name],
 	pageLength: pageLength.value,
 	start: start.value,
+	auto: true,
 	onSuccess(data) {
 		setCategories(data)
 	},
 })
 
 const setCategories = (data) => {
+	if (!data || !data.length) return
 	let allCategories = data.map((course) => course.category)
 	allCategories = allCategories.filter(
 		(category, index) => allCategories.indexOf(category) === index && category
 	)
-	if (categories.value.length <= allCategories.length) {
+	// Always update categories if they're empty (e.g., after navigation)
+	if (categories.value.length === 0 || categories.value.length < allCategories.length) {
 		updateCategories(data)
 	}
 }
@@ -307,6 +303,17 @@ const updateCategories = (data) => {
 watch(currentTab, () => {
 	updateCourses()
 })
+
+// Watch for courses data changes to populate categories (handles cached data)
+watch(
+	() => courses.data,
+	(newData) => {
+		if (newData && newData.length) {
+			setCategories(newData)
+		}
+	},
+	{ immediate: true }
+)
 
 const courseTabs = computed(() => {
 	let tabs = [

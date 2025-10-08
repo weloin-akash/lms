@@ -148,16 +148,23 @@ const batches = createListResource({
 	cache: ['batches', user.data?.name],
 	pageLength: pageLength.value,
 	start: start.value,
+	auto: true,
 	onSuccess(data) {
-		let allCategories = data.map((batch) => batch.category)
-		allCategories = allCategories.filter(
-			(category, index) => allCategories.indexOf(category) === index && category
-		)
-		if (categories.value.length <= allCategories.length) {
-			updateCategories(data)
-		}
+		setCategories(data)
 	},
 })
+
+const setCategories = (data) => {
+	if (!data || !data.length) return
+	let allCategories = data.map((batch) => batch.category)
+	allCategories = allCategories.filter(
+		(category, index) => allCategories.indexOf(category) === index && category
+	)
+	// Always update categories if they're empty (e.g., after navigation)
+	if (categories.value.length === 0 || categories.value.length < allCategories.length) {
+		updateCategories(data)
+	}
+}
 
 const updateBatches = () => {
 	updateFilters()
@@ -276,6 +283,17 @@ const updateCategories = (data) => {
 watch(currentTab, () => {
 	updateBatches()
 })
+
+// Watch for batches data changes to populate categories (handles cached data)
+watch(
+	() => batches.data,
+	(newData) => {
+		if (newData && newData.length) {
+			setCategories(newData)
+		}
+	},
+	{ immediate: true }
+)
 
 const batchTabs = computed(() => {
 	let tabs = [

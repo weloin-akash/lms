@@ -23,23 +23,23 @@
 				<span>
 					{{ __(item.title) }}
 				</span>
-				<Info class="w-3 h-3 text-ink-gray-7" />
+				<!-- <Info class="w-3 h-3 text-ink-gray-7" /> -->
 			</div>
 			<div class="text-xs text-ink-gray-5 mb-1 leading-5">
 				{{ __(item.description) }}
 			</div>
 		</div>
 	</div>
-	<ExplanationVideos v-model="showExplanation" :title="title" :type="type" />
+	<!-- <ExplanationVideos v-model="showExplanation" :title="title" :type="type" /> -->
 </template>
 <script setup>
 import { Info } from 'lucide-vue-next'
-import { ref } from 'vue'
-import ExplanationVideos from '@/components/Modals/ExplanationVideos.vue'
+// import { ref } from 'vue'
+// import ExplanationVideos from '@/components/Modals/ExplanationVideos.vue'
 
-const showExplanation = ref(false)
-const type = ref(null)
-const title = ref(null)
+// const showExplanation = ref(false)
+// const type = ref(null)
+// const title = ref(null)
 const contentMap = {
 	quiz: {
 		title: 'How to add a Quiz?',
@@ -63,9 +63,9 @@ const contentMap = {
 	},
 }
 
-const openHelpDialog = (contentType) => {
-	type.value = contentType
-	title.value = contentMap[contentType].title
-	showExplanation.value = true
-}
+// const openHelpDialog = (contentType) => {
+// 	type.value = contentType
+// 	title.value = contentMap[contentType].title
+// 	showExplanation.value = true
+// }
 </script>

@@ -115,7 +115,7 @@
 												<template #prefix>
 													<ClipboardCheck class="h-4 w-4" />
 												</template>
-												{{ __('View Submissions') }}
+												{{ __('Submissions') }}
 											</Button>
 										</div>
 										<div v-else>{{ item }}</div>

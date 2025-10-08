@@ -75,49 +75,65 @@
 					</ListHeaderItem>
 				</ListHeader>
 				<ListRows>
-					<router-link
-						v-for="row in quizzes.data"
-						:key="row.name"
-						:to="{
-							name: 'QuizForm',
-							params: {
-								quizID: row.name,
-							},
-						}"
-						class="block"
+					<ListRow 
+						v-for="row in quizzes.data" 
+						:key="row.name" 
+						:row="row" 
+						class="hover:bg-gray-50 transition-colors duration-200 group border-b border-gray-100 py-3"
 					>
-						<ListRow :row="row" class="hover:bg-gray-50 transition-colors duration-200 group border-b border-gray-100 py-3">
-							<template #default="{ column, item }">
-								<ListRowItem :item="row[column.key]" :align="column.align">
-									<div v-if="column.key == 'title'" class="flex items-center space-x-2">
-										<div class="w-6 h-6 bg-orange-100 rounded flex items-center justify-center flex-shrink-0">
-											<svg class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+						<template #default="{ column, item }">
+							<ListRowItem :item="row[column.key]" :align="column.align">
+								<div v-if="column.key == 'title'" class="flex items-center space-x-2">
+									<div class="w-6 h-6 bg-orange-100 rounded flex items-center justify-center flex-shrink-0">
+										<svg class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+										</svg>
+									</div>
+									<router-link
+										:to="{
+											name: 'QuizForm',
+											params: {
+												quizID: row.name,
+											},
+										}"
+										class="font-medium text-gray-900 group-hover:text-[#ed8e22] transition-colors"
+									>
+										{{ item }}
+									</router-link>
+								</div>
+								<div v-else-if="column.key == 'total_marks'" class="text-center">
+									<span class="text-sm font-medium text-gray-700">{{ item }}</span>
+								</div>
+								<div v-else-if="column.key == 'passing_percentage'" class="text-center">
+									<span class="text-sm font-medium text-gray-700">{{ item }}%</span>
+								</div>
+								<div v-else-if="column.key == 'max_attempts'" class="text-center">
+									<span class="text-sm font-medium text-gray-700">{{ item }}</span>
+								</div>
+								<div v-else-if="column.key == 'show_answers'" class="text-center">
+									<span v-if="item" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Yes</span>
+									<span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">No</span>
+								</div>
+								<div v-else-if="column.key == 'modified'" class="text-center">
+									<span class="text-sm text-gray-700">{{ item }}</span>
+								</div>
+								<div v-else-if="column.key == 'actions'" class="text-center">
+									<Button 
+										class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white shadow-sm hover:shadow-md transition-all duration-200 px-4 py-2 rounded-lg font-medium !border-0"
+										@click.stop="navigateToSubmissions(row)"
+									>
+										<template #prefix>
+											<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
 											</svg>
-										</div>
-										<span class="font-medium text-gray-900 group-hover:text-[#ed8e22] transition-colors">{{ item }}</span>
-									</div>
-									<div v-else-if="column.key == 'total_marks'" class="text-center">
-										<span class="text-sm font-medium text-gray-700">{{ item }}</span>
-									</div>
-									<div v-else-if="column.key == 'passing_percentage'" class="text-center">
-										<span class="text-sm font-medium text-gray-700">{{ item }}%</span>
-									</div>
-									<div v-else-if="column.key == 'max_attempts'" class="text-center">
-										<span class="text-sm font-medium text-gray-700">{{ item }}</span>
-									</div>
-									<div v-else-if="column.key == 'show_answers'" class="text-center">
-										<span v-if="item" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Yes</span>
-										<span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">No</span>
-									</div>
-									<div v-else-if="column.key == 'modified'" class="text-center">
-										<span class="text-sm text-gray-700">{{ item }}</span>
-									</div>
-									<div v-else>{{ item }}</div>
-								</ListRowItem>
-							</template>
-						</ListRow>
-					</router-link>
+										</template>
+										{{ __('Submissions') }}
+									</Button>
+								</div>
+								<div v-else>{{ item }}</div>
+							</ListRowItem>
+						</template>
+					</ListRow>
 				</ListRows>
 				<ListSelectBanner>
 					<template #actions="{ unselectAll, selections }">
@@ -307,6 +323,15 @@ const deleteQuiz = (selections, unselectAll) => {
 	toast.success(__('Quizzes deleted successfully'))
 }
 
+const navigateToSubmissions = (quiz) => {
+	router.push({
+		name: 'QuizSubmissionList',
+		params: {
+			quizID: quiz.name,
+		},
+	})
+}
+
 const quizColumns = computed(() => {
 	return [
 		{
@@ -349,6 +374,12 @@ const quizColumns = computed(() => {
 			width: 1,
 			align: 'center',
 			icon: 'clock',
+		},
+		{
+			label: __('Actions'),
+			key: 'actions',
+			width: 1,
+			align: 'center',
 		},
 	]
 })
