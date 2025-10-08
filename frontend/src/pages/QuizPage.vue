@@ -1,29 +1,20 @@
 <template>
-	<header
+	<!-- <header
 		v-if="!fromLesson"
-		class="sticky top-0 z-10 backdrop-blur-md bg-[#fef9f3]/80 border-b border-gray-200/50 px-6 py-4 shadow-sm"
+		class="sticky top-0 z-10 flex items-center justify-between border-b bg-surface-white px-3 py-2.5 sm:px-5"
 	>
-		<div class="flex items-center space-x-4">
-			<div class="w-10 h-10 bg-[#ed8e22] rounded-xl flex items-center justify-center">
-				<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-				</svg>
-			</div>
-			<div>
-				<h1 class="text-2xl font-bold text-gray-900">
-					{{ title.data?.title || __('Quiz') }}
-				</h1>
-				<p class="text-gray-600 text-sm">Take the quiz assessment</p>
-			</div>
-		</div>
-	</header>
+		<Breadcrumbs :items="breadcrumbs" />
+	</header> -->
+	<AppHeader>
+		<template #breadcrumbs>
+			<Breadcrumbs :items="breadcrumbs" />
+		</template>
+	</AppHeader>
 	<div
-		class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100/50 py-8"
-		:class="{ 'pt-4': fromLesson }"
+		class="md:w-7/12 md:mx-auto mx-4 py-10"
+		:class="{ 'pt-4 md:w-full': fromLesson }"
 	>
-		<div class="max-w-4xl mx-auto px-6">
-			<Quiz :quizName="quizID" />
-		</div>
+		<Quiz :quizName="quizID" />
 	</div>
 </template>
 <script setup>

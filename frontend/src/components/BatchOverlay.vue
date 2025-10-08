@@ -64,7 +64,7 @@
 					},
 				}"
 			>
-				<Button variant="solid" class="w-full mt-4">
+				<Button variant="solid" class="w-full mt-4 !bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-2.5 rounded-lg font-medium !border-0">
 					<template #prefix>
 						<LogIn v-if="isStudent" class="size-4 stroke-1.5" />
 						<Settings v-else class="size-4 stroke-1.5" />

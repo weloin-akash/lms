@@ -1,70 +1,76 @@
 <template>
 	<div class="">
-		<header
-			class="sticky top-0 z-10 flex items-center justify-between border-b bg-surface-white px-3 py-2.5 sm:px-5"
-		>
-			<Breadcrumbs
-				class="h-7"
-				:items="[
-					{
-						label: __('Jobs'),
-						route: { name: 'Jobs' },
-					},
-					{
-						label: job.data?.job_title,
-						route: { name: 'JobDetail', params: { job: job.data?.name } },
-					},
-				]"
-			/>
-			<div
-				v-if="user.data?.name && !readOnlyMode"
-				class="flex items-center space-x-2"
-			>
-				<router-link
-					v-if="user.data.name == job.data?.owner"
-					:to="{
-						name: 'JobForm',
-						params: { jobName: job.data?.name },
-					}"
+		<AppHeader>
+			<template #icon>
+				<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+				</svg>
+			</template>
+			<template #breadcrumbs>
+				<Breadcrumbs
+					:items="[
+						{
+							label: __('Jobs'),
+							route: { name: 'Jobs' },
+						},
+						{
+							label: job.data?.job_title,
+							route: { name: 'JobDetail', params: { job: job.data?.name } },
+						},
+					]"
+				/>
+			</template>
+			<template #actions>
+				<div
+					v-if="user.data?.name && !readOnlyMode"
+					class="flex items-center space-x-2"
 				>
-					<Button>
+					<router-link
+						v-if="user.data.name == job.data?.owner"
+						:to="{
+							name: 'JobForm',
+							params: { jobName: job.data?.name },
+						}"
+					>
+						<Button>
+							<template #prefix>
+								<Pencil class="h-4 w-4 stroke-1.5" />
+							</template>
+							{{ __('Edit') }}
+						</Button>
+					</router-link>
+					<Button @click="redirectToWebsite(job.data?.company_website)">
 						<template #prefix>
-							<Pencil class="h-4 w-4 stroke-1.5" />
+							<SquareArrowOutUpRight class="h-4 w-4 stroke-1.5" />
 						</template>
-						{{ __('Edit') }}
+						{{ __('Visit Website') }}
 					</Button>
-				</router-link>
-				<Button @click="redirectToWebsite(job.data?.company_website)">
-					<template #prefix>
-						<SquareArrowOutUpRight class="h-4 w-4 stroke-1.5" />
-					</template>
-					{{ __('Visit Website') }}
-				</Button>
-				<Button
-					v-if="!jobApplication.data?.length"
-					variant="solid"
-					@click="openApplicationModal()"
-				>
-					<template #prefix>
-						<SendHorizonal class="h-4 w-4" />
-					</template>
-					{{ __('Apply') }}
-				</Button>
-				<Badge v-else variant="subtle" theme="green" size="lg">
-					<template #prefix>
-						<Check class="h-4 w-4" />
-					</template>
-					{{ __('You have applied') }}
-				</Badge>
-			</div>
-			<div v-else-if="!readOnlyMode">
-				<Button @click="redirectToLogin(job.data?.name)">
-					<span>
-						{{ __('Login to apply') }}
-					</span>
-				</Button>
-			</div>
-		</header>
+					<Button
+						v-if="!jobApplication.data?.length"
+						@click="openApplicationModal()"
+						class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white !border-0 shadow-lg hover:shadow-xl transition-all duration-200 !outline-none focus:!outline-none focus:!ring-2 focus:!ring-[#ed8e22] focus:!ring-offset-2"
+					>
+						<template #prefix>
+							<SendHorizonal class="h-4 w-4" />
+						</template>
+						{{ __('Apply') }}
+					</Button>
+					<Badge v-else variant="subtle" theme="green" size="lg">
+						<template #prefix>
+							<Check class="h-4 w-4" />
+						</template>
+						{{ __('You have applied') }}
+					</Badge>
+				</div>
+				<div v-else-if="!readOnlyMode">
+					<Button @click="redirectToLogin(job.data?.name)">
+						<span>
+							{{ __('Login to apply') }}
+						</span>
+					</Button>
+				</div>
+			</template>
+		</AppHeader>
 		<div v-if="job.data" class="max-w-3xl mx-auto pt-5">
 			<div class="p-4">
 				<div class="space-y-5 mb-12">
@@ -143,6 +149,7 @@ import {
 import { inject, ref } from 'vue'
 import { sessionStore } from '../stores/session'
 import JobApplicationModal from '@/components/Modals/JobApplicationModal.vue'
+import AppHeader from '@/components/AppHeader.vue'
 import {
 	Check,
 	SendHorizonal,

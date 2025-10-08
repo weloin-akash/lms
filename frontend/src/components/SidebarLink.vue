@@ -1,11 +1,12 @@
 <template>
 	<button
 		v-if="link && !link.onlyMobile"
-		class="flex h-7 cursor-pointer items-center rounded text-ink-gray-8 duration-300 ease-in-out focus:outline-none focus:transition-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-outline-gray-3"
-		:class="
-			isActive ? 'bg-surface-selected shadow-sm' : 'hover:bg-surface-gray-2'
-		"
+		class="flex h-7 cursor-pointer items-center rounded duration-300 ease-in-out focus:outline-none focus:transition-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-outline-gray-3"
+		:class="[isActive ? 'shadow-sm text-white' : 'text-ink-gray-8']"
+		:style="isActive ? 'background-color: #088304' : ''"
 		@click="handleClick"
+		@mouseenter="(e) => !isActive && (e.target.style.backgroundColor = '#d4f4d2')"
+		@mouseleave="(e) => !isActive && (e.target.style.backgroundColor = '')"
 	>
 		<div
 			class="flex items-center w-full duration-300 ease-in-out group"
@@ -16,7 +17,8 @@
 					<span class="grid h-5 w-6 flex-shrink-0 place-items-center">
 						<component
 							:is="icons[link.icon]"
-							class="h-4 w-4 stroke-1.5 text-ink-gray-8"
+							class="h-4 w-4 stroke-1.5"
+							:class="isActive ? 'text-white' : 'text-ink-gray-8'"
 						/>
 					</span>
 				</slot>

@@ -1,12 +1,17 @@
 <template>
 	<!-- Modern Header with Glass Effect -->
-	<header
+	<!-- <header
 		class="sticky top-0 z-10 backdrop-blur-md bg-[#fef9f3]/80 border-b border-gray-200/50 px-6 py-4 shadow-sm"
 	>
 		<div class="flex items-center justify-between">
 			<Breadcrumbs :items="breadcrumbs" />
 		</div>
-	</header>
+	</header> -->
+	<AppHeader>
+		<template #breadcrumbs>
+			<Breadcrumbs :items="breadcrumbs" />
+		</template>
+	</AppHeader>
 
 	<!-- Modern Container with Better Spacing -->
 	<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100/50">

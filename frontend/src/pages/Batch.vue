@@ -1,6 +1,6 @@
 <template>
 	<div v-if="user.data?.is_moderator || isStudent" class="">
-		<header
+		<!-- <header
 			class="sticky top-0 z-10 flex items-center justify-between border-b bg-surface-white px-3 py-2.5 sm:px-5"
 		>
 			<Breadcrumbs class="h-7" :items="breadcrumbs" />
@@ -20,7 +20,30 @@
 					</template>
 				</Button>
 			</div>
-		</header>
+		</header> -->
+		<AppHeader :title="__('Batch')" :description="__('Manage and create batches')">
+			<template #icon>
+				<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+				</svg>
+			</template>
+			<template #actions>
+				<Button v-if="canMakeAnnouncement()" @click="openAnnouncementModal()" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 py-2 rounded-lg font-medium border-0">
+					<span>
+						{{ __('Make an Announcement') }}
+					</span>
+					<template #suffix>
+						<SendIcon class="h-4 stroke-1.5" />
+					</template>
+				</Button>
+				<Button v-if="user.data?.is_moderator && batch.data?.certification" @click="openCertificateDialog = true" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 py-2 rounded-lg font-medium border-0">
+					<template #prefix>
+						<Certificate class="h-4 w-4 stroke-1.5" />
+					</template>
+					{{ __('Generate Certificates') }}
+				</Button>
+			</template>
+		</AppHeader>
 		<div
 			v-if="batch.data"
 			class="grid grid-cols-1 md:grid-cols-[75%,25%] h-[calc(100vh-3.2rem)]"

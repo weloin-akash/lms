@@ -108,7 +108,7 @@
 					/>
 				</div>
 				<div class="flex items-center justify-end space-x-2 mt-5">
-					<Button variant="solid" @click="submitQuestion()">
+					<Button variant="solid" @click="submitQuestion()" class="!bg-[#66bb6a]  hover:!bg-[#088304] !text-white !border-0 shadow-lg hover:shadow-xl transition-all duration-200 !outline-none focus:!outline-none focus:!ring-2 focus:!ring-[#ed8e22] focus:!ring-offset-2">
 						{{ __('Save') }}
 					</Button>
 				</div>

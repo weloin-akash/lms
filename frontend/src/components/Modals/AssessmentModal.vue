@@ -8,6 +8,7 @@
 				{
 					label: __('Submit'),
 					variant: 'solid',
+					class: '!bg-[#66bb6a] hover:!bg-[#088304] !text-white !border-0 shadow-lg hover:shadow-xl transition-all duration-200 !outline-none focus:!outline-none focus:!ring-2 focus:!ring-[#ed8e22] focus:!ring-offset-2',
 					onClick: (close) => addAssessment(close),
 				},
 			],
@@ -99,7 +100,7 @@ const assessmentTypes = computed(() => {
 	return [
 		{ label: 'Quiz', value: 'LMS Quiz' },
 		{ label: 'Assignment', value: 'LMS Assignment' },
-		{ label: 'Programming Exercise', value: 'LMS Programming Exercise' },
+		// { label: 'Programming Exercise', value: 'LMS Programming Exercise' },
 	]
 })
 </script>

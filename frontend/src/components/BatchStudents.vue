@@ -61,12 +61,27 @@
 		/>
 	</div>
 
-	<div>
-		<div class="flex items-center justify-between mb-4">
-			<div class="text-ink-gray-7 font-medium">
-				{{ __('Students') }}
+	<!-- Students Section -->
+	<div class="bg-white rounded-xl shadow-sm border border-gray-200/50 p-6">
+		<div class="flex items-center justify-between mb-6">
+			<div class="flex items-center space-x-3">
+				<div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+					<svg class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+					</svg>
+				</div>
+				<div>
+					<h2 class="text-xl font-bold text-gray-900">{{ __('Students') }}</h2>
+					<p class="text-sm text-gray-600">
+						{{ students.data?.length ? `${students.data.length} students enrolled` : 'No students enrolled yet' }}
+					</p>
+				</div>
 			</div>
-			<Button v-if="!readOnlyMode" @click="openStudentModal()">
+			<Button 
+				v-if="!readOnlyMode" 
+				@click="openStudentModal()"
+				class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-2.5 rounded-lg font-medium !border-0"
+			>
 				<template #prefix>
 					<Plus class="h-4 w-4" />
 				</template>
@@ -81,22 +96,27 @@
 				row-key="name"
 				:options="{
 					showTooltip: false,
+					selectable: true,
 				}"
+				class="modern-student-list"
 			>
-				<ListHeader
-					class="mb-2 grid items-center space-x-4 rounded bg-surface-gray-2 p-2"
-				>
+				<ListHeader class="border-b border-gray-200 bg-gray-50 py-3">
 					<ListHeaderItem
 						:item="item"
 						v-for="item in getStudentColumns()"
-						:title="item.label"
 					>
 						<template #prefix="{ item }">
-							<FeatherIcon
-								v-if="item.icon"
-								:name="item.icon"
-								class="h-4 w-4 stroke-1.5"
-							/>
+							<div class="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center mr-2">
+								<svg v-if="item.key === 'full_name'" class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+								</svg>
+								<svg v-else-if="item.key === 'progress'" class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+								</svg>
+								<svg v-else class="w-3 h-3 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
+							</div>
 						</template>
 					</ListHeaderItem>
 				</ListHeader>
@@ -104,31 +124,34 @@
 					<ListRow
 						:row="row"
 						v-for="row in students.data"
-						class="group cursor-pointer"
+						class="hover:bg-gray-50 transition-colors duration-200 group cursor-pointer border-b border-gray-100 py-3"
 						@click="openStudentProgressModal(row)"
 					>
 						<template #default="{ column, item }">
 							<ListRowItem
 								:item="row[column.key]"
 								:align="column.align"
-								class="text-sm"
 							>
-								<template #prefix>
-									<div v-if="column.key == 'full_name'">
-										<Avatar
-											class="flex items-center"
-											:image="row['user_image']"
-											:label="item"
-											size="sm"
-										/>
-									</div>
-								</template>
+								<div v-if="column.key == 'full_name'" class="flex items-center space-x-3">
+									<Avatar
+										class="flex items-center flex-shrink-0"
+										:image="row['user_image']"
+										:label="item"
+										size="md"
+									/>
+									<span class="font-medium text-gray-900 group-hover:text-[#ed8e22] transition-colors">{{ item }}</span>
+								</div>
 								<div
-									v-if="column.key == 'progress'"
-									class="flex items-center space-x-4 w-full"
+									v-else-if="column.key == 'progress'"
+									class="flex items-center space-x-3 w-full"
 								>
-									<ProgressBar :progress="row[column.key]" size="sm" />
-									<div class="text-xs">{{ row[column.key] }}%</div>
+									<div class="flex-1">
+										<ProgressBar :progress="row[column.key]" size="md" />
+									</div>
+									<div class="text-sm font-medium text-gray-700 min-w-[3rem] text-right">{{ row[column.key] }}%</div>
+								</div>
+								<div v-else-if="column.key == 'last_active'" class="text-center">
+									<span class="text-sm text-gray-700">{{ row[column.key] }}</span>
 								</div>
 								<div v-else>
 									{{ row[column.key] }}
@@ -143,16 +166,38 @@
 							<Button
 								variant="ghost"
 								@click="removeStudents(selections, unselectAll)"
+								class="text-red-600 hover:bg-red-50"
 							>
-								<Trash2 class="h-4 w-4 stroke-1.5" />
+								<template #prefix>
+									<Trash2 class="h-4 w-4 stroke-1.5" />
+								</template>
+								{{ __('Remove') }}
 							</Button>
 						</div>
 					</template>
 				</ListSelectBanner>
 			</ListView>
 		</div>
-		<div v-else class="text-sm italic text-ink-gray-5">
-			{{ __('There are no students in this batch.') }}
+		
+		<!-- Empty State -->
+		<div v-else class="text-center py-12">
+			<div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+				<svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+				</svg>
+			</div>
+			<h3 class="text-lg font-semibold text-gray-900 mb-2">{{ __('No students in this batch') }}</h3>
+			<p class="text-gray-600 mb-6">{{ __('Get started by adding your first student to this batch') }}</p>
+			<Button 
+				v-if="!readOnlyMode" 
+				@click="openStudentModal()"
+				class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-2.5 rounded-lg font-medium !border-0"
+			>
+				<template #prefix>
+					<Plus class="h-4 w-4" />
+				</template>
+				{{ __('Add Your First Student') }}
+			</Button>
 		</div>
 	</div>
 
@@ -233,19 +278,19 @@ const getStudentColumns = () => {
 		{
 			label: 'Full Name',
 			key: 'full_name',
-			width: '20rem',
+			width: 2,
 			icon: 'user',
 		},
 		{
 			label: 'Progress',
 			key: 'progress',
-			width: '15rem',
+			width: 2,
 			icon: 'activity',
 		},
 		{
 			label: 'Last Active',
 			key: 'last_active',
-			width: '10rem',
+			width: 1,
 			align: 'center',
 			icon: 'clock',
 		},

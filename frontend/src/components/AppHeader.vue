@@ -11,7 +11,7 @@ const props = defineProps<{
 <template>
     <!-- Modern header style (with icon, title, description) -->
     <header
-		v-if="title || description || $slots.icon"
+		v-if="title || description || $slots.icon || $slots.breadcrumbs || breadcrumbs"
 		class="sticky top-0 z-10 backdrop-blur-md bg-[#fef9f3]/80 border-b border-gray-200/50 px-6 py-4 shadow-sm"
 	>
 		<div class="flex items-center justify-between">

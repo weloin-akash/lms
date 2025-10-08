@@ -48,7 +48,7 @@
 						<div class="text-lg font-semibold">
 							{{ __('Courses') }}
 						</div>
-						<Button @click="openForm('course')">
+						<Button @click="openForm('course')" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white">
 							<template #prefix>
 								<Plus class="h-4 w-4 stroke-1.5" />
 							</template>
@@ -123,7 +123,7 @@
 								</template>
 								{{ __('Progress Summary') }}
 							</Button>
-							<Button @click="openForm('member')">
+							<Button @click="openForm('member')" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white">
 								<template #prefix>
 									<Plus class="h-4 w-4 stroke-1.5" />
 								</template>
@@ -178,6 +178,7 @@
 						{
 							label: __('Add'),
 							variant: 'solid',
+							class: '!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white',
 							onClick: ({ close }: { close: () => void }) =>
 								currentForm == 'course'
 									? addCourse(close)
@@ -229,7 +230,7 @@
 					</template>
 					{{ __('Delete') }}
 				</Button>
-				<Button variant="solid" @click="saveProgram(close)">
+				<Button variant="solid" @click="saveProgram(close)" class="!bg-[#66bb6a] hover:!bg-[#088304] !text-white !border-0 shadow-lg hover:shadow-xl transition-all duration-200 !outline-none focus:!outline-none focus:!ring-2 focus:!ring-[#ed8e22] focus:!ring-offset-2">
 					{{ __('Save') }}
 				</Button>
 			</div>

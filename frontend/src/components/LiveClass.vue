@@ -13,7 +13,7 @@
 		<div class="text-lg font-semibold text-ink-gray-9">
 			{{ __('Live Class') }}
 		</div>
-		<Button v-if="canCreateClass()" @click="openLiveClassModal">
+		<Button v-if="canCreateClass()" @click="openLiveClassModal" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white !border-0 shadow-lg hover:shadow-xl transition-all duration-200 !outline-none focus:!outline-none focus:!ring-2 focus:!ring-[#ed8e22] focus:!ring-offset-2">
 			<template #prefix>
 				<Plus class="h-4 w-4" />
 			</template>

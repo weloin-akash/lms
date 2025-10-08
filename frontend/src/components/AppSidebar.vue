@@ -1,6 +1,7 @@
 <template>
 	<div
-		class="flex h-full flex-col justify-between transition-all duration-300 ease-in-out border-r bg-surface-menu-bar"
+		class="flex h-full flex-col justify-between transition-all duration-300 ease-in-out border-r"
+		style="background-color: #f9fff8"
 		:class="sidebarStore.isSidebarCollapsed ? 'w-14' : 'w-56'"
 	>
 		<div
@@ -645,7 +646,7 @@ watch(userResource, () => {
 		isInstructor.value = userResource.data.is_instructor
 		addHome()
 		addPrograms()
-		addProgrammingExercises()
+		// addProgrammingExercises()
 		addQuizzes()
 		addAssignments()
 		setUpOnboarding()
@@ -653,7 +654,7 @@ watch(userResource, () => {
 })
 
 const redirectToWebsite = () => {
-	window.open('https://frappe.io/learning', '_blank')
+	window.open('https://weloin.com', '_blank')
 }
 
 onUnmounted(() => {

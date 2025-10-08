@@ -1,78 +1,103 @@
 <template>
-	<div class="">
-		<div class="grid md:grid-cols-[75%,25%] h-screen">
-			<div class="border-r">
-				<header
-					class="sticky top-0 z-10 flex flex-col md:flex-row md:items-center justify-between border-b overflow-hidden bg-surface-white px-3 py-2.5 sm:px-5"
+	<AppHeader>
+		<template #breadcrumbs>
+			<Breadcrumbs :items="breadcrumbs" />
+		</template>
+		<template #icon>
+			<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+			</svg>
+		</template>
+		<template #actions>
+			<div class="flex items-center space-x-3">
+				<Button 
+					class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-2.5 rounded-lg font-medium !border-0"
+					@click="saveLesson({ showSuccessMessage: true })"
 				>
-					<Breadcrumbs class="text-ellipsis" :items="breadcrumbs" />
-					<Button
-						variant="solid"
-						@click="saveLesson({ showSuccessMessage: true })"
-						class="mt-3 md:mt-0"
-					>
-						{{ __('Save') }}
-					</Button>
-				</header>
-				<div class="py-5">
-					<div class="w-5/6 mx-auto">
-						<FormControl
-							v-model="lesson.title"
-							label="Title"
-							class="mb-4"
-							:required="true"
-						/>
-						<FormControl
-							v-model="lesson.include_in_preview"
-							type="checkbox"
-							label="Include in Preview"
-						/>
+					<template #prefix>
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+						</svg>
+					</template>
+					{{ __('Save') }}
+				</Button>
+			</div>
+		</template>
+	</AppHeader>
+	<div class="grid md:grid-cols-[75%,25%] min-h-screen">
+		<div class="bg-gradient-to-br from-gray-50 to-gray-100/50 py-8 px-6">
+			<!-- Lesson Details Card -->
+			<div class="bg-white rounded-xl shadow-sm border border-gray-200/50 p-8 mb-8">
+				<div class="flex items-center space-x-3 mb-6">
+					<div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+						<svg class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+						</svg>
 					</div>
-					<div class="border-t mt-4">
-						<div class="w-5/6 mx-auto pt-4">
-							<div
-								class="flex justify-between cursor-pointer"
-								@click="
-									() => {
-										openInstructorEditor = !openInstructorEditor
-									}
-								"
-							>
-								<label class="block font-medium text-ink-gray-5 mb-1">
-									{{ __('Instructor Notes') }}
-								</label>
-								<ChevronRight
-									class="stroke-2 h-5 w-5 text-ink-gray-5"
-									:class="{
-										'rotate-90 transform duration-200': openInstructorEditor,
-										'duration-200': !openInstructorEditor,
-									}"
-								/>
-							</div>
-							<div
-								v-show="openInstructorEditor"
-								id="instructor-notes"
-								class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal py-3"
-							></div>
-						</div>
-					</div>
-					<div class="border-t mt-4">
-						<div class="w-5/6 mx-auto pt-4">
-							<label class="block font-medium text-ink-gray-5 mb-1">
-								{{ __('Content') }}
-							</label>
-							<div
-								id="content"
-								class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal py-3"
-							></div>
-						</div>
-					</div>
+					<h2 class="text-xl font-bold text-gray-900">{{ __('Lesson Details') }}</h2>
+				</div>
+				<div class="space-y-6">
+					<FormControl
+						v-model="lesson.title"
+						:label="__('Title')"
+						:required="true"
+						class="rounded-lg border-gray-300 focus:border-[#ed8e22] focus:ring-[#ed8e22] transition-all duration-200"
+					/>
+					<FormControl
+						v-model="lesson.include_in_preview"
+						type="checkbox"
+						:label="__('Include in Preview')"
+					/>
 				</div>
 			</div>
-			<div class="">
-				<div class="sticky top-0 p-5">
-					<LessonHelp />
+
+			<!-- Instructor Notes Card -->
+			<div class="bg-white rounded-xl shadow-sm border border-gray-200/50 p-8 mb-8">
+				<div 
+					class="flex items-center justify-between cursor-pointer"
+					@click="openInstructorEditor = !openInstructorEditor"
+				>
+					<div class="flex items-center space-x-3">
+						<div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+							<svg class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+							</svg>
+						</div>
+						<h2 class="text-xl font-bold text-gray-900">{{ __('Instructor Notes') }}</h2>
+					</div>
+					<ChevronRight
+						class="stroke-2 h-5 w-5 text-gray-500 transition-transform duration-200"
+						:class="{
+							'rotate-90': openInstructorEditor,
+						}"
+					/>
 				</div>
+				<div
+					v-show="openInstructorEditor"
+					id="instructor-notes"
+					class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal pt-6"
+				></div>
+			</div>
+
+			<!-- Content Card -->
+			<div class="bg-white rounded-xl shadow-sm border border-gray-200/50 p-8">
+				<div class="flex items-center space-x-3 mb-6">
+					<div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+						<svg class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+						</svg>
+					</div>
+					<h2 class="text-xl font-bold text-gray-900">{{ __('Content') }}</h2>
+				</div>
+				<div
+					id="content"
+					class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal"
+				></div>
+			</div>
+		</div>
+		<div class="bg-white border-l">
+			<div class="sticky top-0 p-5">
+				<LessonHelp />
 			</div>
 		</div>
 	</div>
@@ -96,6 +121,7 @@ import {
 } from 'vue'
 import { sessionStore } from '../stores/session'
 import EditorJS from '@editorjs/editorjs'
+import AppHeader from '@/components/AppHeader.vue'
 import LessonHelp from '@/components/LessonHelp.vue'
 import { ChevronRight } from 'lucide-vue-next'
 import { getEditorTools, enablePlyr } from '@/utils'

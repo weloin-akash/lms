@@ -1,34 +1,38 @@
 <template>
-	<!-- <header
-		class="sticky flex items-center justify-between top-0 z-10 border-b bg-surface-white px-3 py-2.5 sm:px-5"
-	>
-		<Breadcrumbs :items="[{ label: __('Home'), route: { name: 'Home' } }]" />
-	</header> -->
-	<div class="w-full px-5 pt-10 pb-10">
-		<div class="flex items-center justify-between">
-			<div class="space-y-2">
-				<div class="text-xl font-bold">
-					{{ __('Hey') }}, {{ user.data?.full_name }} 👋
-				</div>
-				<div class="text-lg text-ink-gray-6">
-					{{ subtitle }}
-				</div>
+	<AppHeader>
+		<template #icon>
+			<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+			</svg>
+		</template>
+		<template #title>
+			<div class="flex items-center space-x-2">
+				<span>{{ __('Hey') }}, {{ user.data?.full_name }}</span>
+				<span class="text-2xl">👋</span>
 			</div>
-			<div>
+		</template>
+		<template #description>
+			{{ subtitle }}
+		</template>
+		<template #actions>
+			<div class="flex items-center space-x-3">
 				<TabButtons v-if="isAdmin" v-model="currentTab" :buttons="tabs" />
 				<div
 					v-else
 					@click="showStreakModal = true"
-					class="bg-surface-amber-2 px-2 py-1 rounded-md cursor-pointer"
+					class="inline-flex items-center space-x-2 bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 border border-orange-200 shadow-sm"
 				>
-					<span> 🔥 </span>
-					<span>
+					<span class="text-xl">🔥</span>
+					<span class="font-semibold text-orange-800">
 						{{ streakInfo.data?.current_streak }}
 					</span>
+					<span class="text-sm text-orange-700">day streak</span>
 				</div>
 			</div>
-		</div>
+		</template>
+	</AppHeader>
 
+	<div class="w-full px-5 pb-10">
 		<AdminHome
 			v-if="isAdmin && currentTab === 'instructor'"
 			:liveClasses="adminLiveClasses"
@@ -51,6 +55,7 @@ import { sessionStore } from '@/stores/session'
 import StudentHome from '@/pages/Home/StudentHome.vue'
 import AdminHome from '@/pages/Home/AdminHome.vue'
 import Streak from '@/pages/Home/Streak.vue'
+import AppHeader from '@/components/AppHeader.vue'
 
 const user = inject<any>('$user')
 const { brand } = sessionStore()
