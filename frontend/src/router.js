@@ -237,6 +237,11 @@ const routes = [
 			),
 		props: true,
 	},
+	{
+		path: '/google/auth',
+		name: 'GoogleAuthCallback',
+		component: () => import('@/pages/GoogleAuthCallback.vue'),
+	},
 ]
 
 let router = createRouter({

@@ -5,7 +5,7 @@
 				<router-view />
 			</div>
 		</Layout>
-		<InstallPrompt v-if="isMobile" />
+		<!-- <InstallPrompt v-if="isMobile" /> -->
 		<Dialogs />
 	</FrappeUIProvider>
 </template>
@@ -20,7 +20,7 @@ import { posthogSettings } from '@/telemetry'
 import DesktopLayout from './components/DesktopLayout.vue'
 import MobileLayout from './components/MobileLayout.vue'
 import NoSidebarLayout from './components/NoSidebarLayout.vue'
-import InstallPrompt from './components/InstallPrompt.vue'
+// import InstallPrompt from './components/InstallPrompt.vue'
 
 const { isMobile } = useScreenSize()
 const router = useRouter()

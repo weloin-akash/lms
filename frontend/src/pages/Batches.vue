@@ -9,6 +9,16 @@
 			<Breadcrumbs :items="breadcrumbs" />
 		</template> -->
 		<template #actions>
+			<ViewEnrollments v-if="user.data?.is_moderator" batch="">
+				<template #trigger="{ open }">
+					<Button @click="open" class="!bg-blue-600 hover:!bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 py-2 rounded-lg font-medium border-0">
+						<template #prefix>
+							<ClipboardList class="h-4 w-4 stroke-1.5" />
+						</template>
+						{{ __('View Enrollments') }}
+					</Button>
+				</template>
+			</ViewEnrollments>
 			<router-link
 				v-if="canCreateBatch()"
 				:to="{
@@ -100,14 +110,16 @@ import {
 	FormControl,
 	Select,
 	TabButtons,
+	toast,
 	usePageMeta,
 } from 'frappe-ui'
 import { computed, inject, onMounted, ref, watch } from 'vue'
-import { Plus } from 'lucide-vue-next'
+import { Plus, ClipboardList } from 'lucide-vue-next'
 import { sessionStore } from '@/stores/session'
 import BatchCard from '@/components/BatchCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import AppHeader from '@/components/AppHeader.vue'
+import ViewEnrollments from '@nuxtapp/components/ViewEnrollments.vue'
 
 const user = inject('$user')
 const dayjs = inject('$dayjs')

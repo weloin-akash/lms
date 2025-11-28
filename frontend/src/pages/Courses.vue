@@ -119,6 +119,12 @@ onMounted(() => {
 	setFiltersFromQuery()
 	updateCourses()
 	getCourseCount()
+	categories.value = [
+		{
+			label: '',
+			value: null,
+		},
+	]
 })
 
 const setFiltersFromQuery = () => {
@@ -146,8 +152,8 @@ const setCategories = (data) => {
 	allCategories = allCategories.filter(
 		(category, index) => allCategories.indexOf(category) === index && category
 	)
-	// Always update categories if they're empty (e.g., after navigation)
-	if (categories.value.length === 0 || categories.value.length < allCategories.length) {
+	// Always update categories if only blank option exists or if new categories are found
+	if (categories.value.length <= 1 || categories.value.length < allCategories.length + 1) {
 		updateCategories(data)
 	}
 }

@@ -179,6 +179,20 @@ def get_lesson_icon(body, content):
 			]:
 				return "icon-youtube"
 
+			if block.get("type") == "upload" and block.get("data").get("file_type").lower() in [
+				"ppt",
+				"pptx",
+				"doc",
+				"docx",
+			]:
+				return "icon-list"
+
+			# if block.get("type") == "upload" and block.get("data").get("file_type").lower() in [
+			# 	"doc",
+			# 	"docx",
+			# ]:
+			# 	return "icon-list"
+
 			if block.get("type") == "embed" and block.get("data").get("service") in [
 				"youtube",
 				"vimeo",
@@ -198,6 +212,10 @@ def get_lesson_icon(body, content):
 			return "icon-youtube"
 		elif macro[0] == "Quiz":
 			return "icon-quiz"
+		elif macro[0] == "PPT" or macro[0] == "DOC":
+			return "icon-list"
+		# elif macro[0] == "DOC":
+		# 	return "icon-list"
 
 	return "icon-list"
 

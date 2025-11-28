@@ -10,7 +10,7 @@
 				</div> -->
 			</div>
 			<div class="flex items-center space-x-5">
-				<Button @click="openTemplateForm('new')">
+				<Button @click="openTemplateForm('new')" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white transition-all duration-200 rounded-lg px-3 py-1.5 border-0">
 					<template #prefix>
 						<Plus class="h-3 w-3 stroke-1.5" />
 					</template>

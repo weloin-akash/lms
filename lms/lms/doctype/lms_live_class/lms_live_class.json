@@ -10,6 +10,8 @@
   "title",
   "host",
   "zoom_account",
+  "meeting_provider",
+  "provider_type",
   "batch_name",
   "column_break_astv",
   "date",
@@ -141,7 +143,20 @@
    "fieldtype": "Link",
    "label": "Zoom Account",
    "options": "LMS Zoom Settings",
-   "reqd": 1
+   "depends_on": "eval:!doc.meeting_provider"
+  },
+  {
+   "fieldname": "meeting_provider",
+   "fieldtype": "Link",
+   "label": "Meeting Provider",
+   "options": "LMS Meeting Provider Settings",
+   "depends_on": "eval:!doc.zoom_account"
+  },
+  {
+   "fieldname": "provider_type",
+   "fieldtype": "Data",
+   "label": "Provider Type",
+   "read_only": 1
   },
   {
    "fieldname": "meeting_id",

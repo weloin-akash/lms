@@ -1,10 +1,21 @@
 <template>
 	<div class="">
-		<header
+		<!-- <header
 			class="sticky top-0 z-10 flex items-center justify-between border-b bg-surface-white px-3 py-2.5 sm:px-5"
 		>
 			<Breadcrumbs class="h-7" :items="breadcrumbs" />
-		</header>
+		</header> -->
+		<AppHeader>
+			<template #icon>
+				<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+				</svg>
+			</template>
+			<template #breadcrumbs>
+				<Breadcrumbs :items="breadcrumbs" />
+			</template>
+		</AppHeader>
+		
 		<div v-if="chartDetails.data" class="p-5">
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
 				<Tooltip :text="__('Published Courses')">
@@ -142,10 +153,19 @@ import {
 	Tooltip,
 	usePageMeta,
 } from 'frappe-ui'
-import { computed } from 'vue'
+import { computed, inject, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { sessionStore } from '../stores/session'
 
 const { brand } = sessionStore()
+const router = useRouter()
+const user = inject('$user')
+
+onMounted(() => {
+	if (!user.data?.is_moderator) {
+		router.push({ name: 'Courses' })
+	}
+})
 
 const breadcrumbs = computed(() => {
 	return [

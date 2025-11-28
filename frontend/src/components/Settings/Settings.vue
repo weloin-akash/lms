@@ -77,7 +77,7 @@ import Categories from '@/components/Settings/Categories.vue'
 import EmailTemplates from '@/components/Settings/EmailTemplates.vue'
 import BrandSettings from '@/components/Settings/BrandSettings.vue'
 import PaymentSettings from '@/components/Settings/PaymentSettings.vue'
-import ZoomSettings from '@/components/Settings/ZoomSettings.vue'
+import MeetingProviderSettings from '@/components/Settings/MeetingProviderSettings.vue'
 import Badges from '@/components/Settings/Badges.vue'
 
 const show = defineModel()
@@ -132,8 +132,6 @@ const tabsStructure = computed(() => {
 							name: 'livecode_url',
 							doctype: 'Livecode URL',
 							type: 'text',
-							description:
-								'https://docs.frappe.io/learning/falcon-self-hosting-guide',
 						},
 						{
 							label: 'Batch Confirmation Email Template',
@@ -222,11 +220,11 @@ const tabsStructure = computed(() => {
 					template: markRaw(Evaluators),
 				},
 				{
-					label: 'Zoom Accounts',
+					label: 'Meeting Providers',
 					description:
-						'Manage zoom accounts to conduct live classes from batches',
-					icon: 'Video',
-					template: markRaw(ZoomSettings),
+						'Manage meeting providers (Google Meet, Zoom, Microsoft Teams) for live classes',
+					icon: 'MonitorPlay',
+					template: markRaw(MeetingProviderSettings),
 				},
 				{
 					label: 'Badges',

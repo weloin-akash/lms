@@ -147,6 +147,9 @@ watch(userResource, () => {
 			addQuizzes()
 			addAssignments()
 		}
+		if (isModerator.value) {
+			addStatistics()
+		}
 	}
 })
 
@@ -163,6 +166,14 @@ const addAssignments = () => {
 		label: 'Assignments',
 		icon: 'Pencil',
 		to: 'Assignments',
+	})
+}
+
+const addStatistics = () => {
+	otherLinks.value.push({
+		label: 'Statistics',
+		icon: 'TrendingUp',
+		to: 'Statistics',
 	})
 }
 

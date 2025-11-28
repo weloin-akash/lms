@@ -8,6 +8,7 @@
 			actions: [
 				{
 					label: __('Save'),
+					class: '!bg-[#66bb6a] hover:!bg-[#088304] text-white transition-all duration-200 rounded-lg px-3 py-1.5 border-0',
 					variant: 'solid',
 					onClick: ({ close }) => {
 						saveAccount(close)

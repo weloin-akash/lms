@@ -42,6 +42,24 @@
 				allowfullscreen
 			></iframe>
 		</div>
+		<div v-else-if="block.includes('{{ PPT')">
+			<iframe
+				:src="getPPTSource(block)"
+				width="100%"
+				height="700px"
+				frameborder="0"
+				allowfullscreen
+			></iframe>
+		</div>
+		<div v-else-if="block.includes('{{ DOC')">
+			<iframe
+				:src="getDocSource(block)"
+				width="100%"
+				height="700px"
+				frameborder="0"
+				allowfullscreen
+			></iframe>
+		</div>
 		<div v-else-if="block.includes('{{ Audio')">
 			<audio width="100%" controls controlsList="nodownload">
 				<source :src="getId(block)" type="audio/mp3" />
@@ -99,6 +117,18 @@ const getYouTubeVideoSource = (block) => {
 
 const getPDFSource = (block) => {
 	return `${getId(block)}#toolbar=0`
+}
+
+const getPPTSource = (block) => {
+	const fileUrl = getId(block)
+	const fullUrl = `${window.location.origin}${fileUrl}`
+	return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fullUrl)}`
+}
+
+const getDocSource = (block) => {
+	const fileUrl = getId(block)
+	const fullUrl = `${window.location.origin}${fileUrl}`
+	return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fullUrl)}`
 }
 
 const getId = (block) => {

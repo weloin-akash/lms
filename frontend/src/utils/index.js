@@ -433,12 +433,12 @@ export function getSidebarLinks() {
 			to: 'Jobs',
 			activeFor: ['Jobs', 'JobDetail'],
 		},
-		{
-			label: 'Statistics',
-			icon: 'TrendingUp',
-			to: 'Statistics',
-			activeFor: ['Statistics'],
-		},
+		// {
+		// 	label: 'Statistics',
+		// 	icon: 'TrendingUp',
+		// 	to: 'Statistics',
+		// 	activeFor: ['Statistics'],
+		// },
 	]
 }
 

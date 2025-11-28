@@ -6,6 +6,7 @@
 			actions: [
 				{
 					label: 'Post',
+					class: 'bg-[#66bb6a] hover:bg-[#088304] text-white border-0',
 					variant: 'solid',
 					onClick: (close) => submitTopic(close),
 				},

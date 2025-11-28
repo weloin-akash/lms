@@ -120,7 +120,7 @@
 							</div>
 						</template>
 					</Tooltip>
-					<Tooltip :text="__('Powered by Learning')">
+					<Tooltip :text="__('Powered by Weloin')">
 						<Zap
 							class="size-4 stroke-1.5 text-ink-gray-7 cursor-pointer"
 							@click="redirectToWebsite()"
@@ -153,19 +153,17 @@
 				</Tooltip>
 			</div>
 		</div>
-		<HelpModal
-			v-if="showOnboarding && showHelpModal"
-			v-model="showHelpModal"
-			v-model:articles="articles"
-			appName="learning"
-			title="Frappe Learning"
-			:logo="LMSLogo"
-			:afterSkip="(step) => capture('onboarding_step_skipped_' + step)"
-			:afterSkipAll="() => capture('onboarding_steps_skipped')"
-			:afterReset="(step) => capture('onboarding_step_reset_' + step)"
-			:afterResetAll="() => capture('onboarding_steps_reset')"
-			docsLink="https://docs.frappe.io/learning"
-		/>
+	<HelpModal
+		v-if="showOnboarding && showHelpModal && !isOnboardingStepsCompleted"
+		v-model="showHelpModal"
+		appName="learning"
+		title="Frappe Learning"
+		:logo="LMSLogo"
+		:afterSkip="(step) => capture('onboarding_step_skipped_' + step)"
+		:afterSkipAll="() => capture('onboarding_steps_skipped')"
+		:afterReset="(step) => capture('onboarding_step_reset_' + step)"
+		:afterResetAll="() => capture('onboarding_steps_reset')"
+	/>
 		<IntermediateStepModal
 			v-model="showIntermediateModal"
 			:currentStep="currentStep"
@@ -342,6 +340,17 @@ const addAssignments = () => {
 				'AssignmentSubmissionList',
 				'AssignmentSubmission',
 			],
+		})
+	}
+}
+
+const addStatistics = () => {
+	if (isModerator.value) {
+		sidebarLinks.value.push({
+			label: 'Statistics',
+			icon: 'TrendingUp',
+			to: 'Statistics',
+			activeFor: ['Statistics'],
 		})
 	}
 }
@@ -569,67 +578,67 @@ const steps = reactive([
 	},
 ])
 
-const articles = ref([
-	{
-		title: __('Introduction'),
-		opened: false,
-		subArticles: [
-			{ name: 'introduction', title: __('Introduction') },
-			{ name: 'setting-up', title: __('Setting up') },
-		],
-	},
-	{
-		title: __('Creating a course'),
-		opened: false,
-		subArticles: [
-			{ name: 'create-a-course', title: __('Create a course') },
-			{ name: 'add-a-chapter', title: __('Add a chapter') },
-			{ name: 'add-a-lesson', title: __('Add a lesson') },
-		],
-	},
-	{
-		title: __('Creating a batch'),
-		opened: false,
-		subArticles: [
-			{ name: 'create-a-batch', title: __('Create a batch') },
-			{ name: 'create-a-live-class', title: __('Create a live class') },
-		],
-	},
-	{
-		title: __('Assessments'),
-		opened: false,
-		subArticles: [
-			{ name: 'quizzes', title: __('Quizzes') },
-			{ name: 'assignments', title: __('Assignments') },
-		],
-	},
-	{
-		title: __('Certification'),
-		opened: false,
-		subArticles: [
-			{ name: 'issue-a-certificate', title: __('Issue a Certificate') },
-			{
-				name: 'custom-certificate-templates',
-				title: __('Custom Certificate Templates'),
-			},
-		],
-	},
-	{
-		title: __('Monetization'),
-		opened: false,
-		subArticles: [
-			{
-				name: 'setting-up-payment-gateway',
-				title: __('Setting up payment gateway'),
-			},
-		],
-	},
-	{
-		title: __('Settings'),
-		opened: false,
-		subArticles: [{ name: 'roles', title: __('Roles') }],
-	},
-])
+// const articles = ref([
+// 	{
+// 		title: __('Introduction'),
+// 		opened: false,
+// 		subArticles: [
+// 			{ name: 'introduction', title: __('Introduction') },
+// 			{ name: 'setting-up', title: __('Setting up') },
+// 		],
+// 	},
+// 	{
+// 		title: __('Creating a course'),
+// 		opened: false,
+// 		subArticles: [
+// 			{ name: 'create-a-course', title: __('Create a course') },
+// 			{ name: 'add-a-chapter', title: __('Add a chapter') },
+// 			{ name: 'add-a-lesson', title: __('Add a lesson') },
+// 		],
+// 	},
+// 	{
+// 		title: __('Creating a batch'),
+// 		opened: false,
+// 		subArticles: [
+// 			{ name: 'create-a-batch', title: __('Create a batch') },
+// 			{ name: 'create-a-live-class', title: __('Create a live class') },
+// 		],
+// 	},
+// 	{
+// 		title: __('Assessments'),
+// 		opened: false,
+// 		subArticles: [
+// 			{ name: 'quizzes', title: __('Quizzes') },
+// 			{ name: 'assignments', title: __('Assignments') },
+// 		],
+// 	},
+// 	{
+// 		title: __('Certification'),
+// 		opened: false,
+// 		subArticles: [
+// 			{ name: 'issue-a-certificate', title: __('Issue a Certificate') },
+// 			{
+// 				name: 'custom-certificate-templates',
+// 				title: __('Custom Certificate Templates'),
+// 			},
+// 		],
+// 	},
+// 	{
+// 		title: __('Monetization'),
+// 		opened: false,
+// 		subArticles: [
+// 			{
+// 				name: 'setting-up-payment-gateway',
+// 				title: __('Setting up payment gateway'),
+// 			},
+// 		],
+// 	},
+// 	{
+// 		title: __('Settings'),
+// 		opened: false,
+// 		subArticles: [{ name: 'roles', title: __('Roles') }],
+// 	},
+// ])
 
 const setUpOnboarding = () => {
 	if (userResource.data?.is_system_manager) {
@@ -649,6 +658,7 @@ watch(userResource, () => {
 		// addProgrammingExercises()
 		addQuizzes()
 		addAssignments()
+		addStatistics()
 		setUpOnboarding()
 	}
 })
@@ -661,3 +671,15 @@ onUnmounted(() => {
 	socket.off('publish_lms_notifications')
 })
 </script>
+
+<style scoped>
+/* Hide the Help Center articles section and footer items */
+:deep(.help-center) {
+	display: none !important;
+}
+
+/* Hide the Getting started footer button in help modal */
+:deep(.fixed.z-50 > div:last-child) {
+	display: none !important;
+}
+</style>

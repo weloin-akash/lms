@@ -49,7 +49,7 @@ const contentMap = {
 	upload: {
 		title: 'How to upload content from your system?',
 		description:
-			'To upload Image, Video, Audio or PDF from your system, click on the add icon and select upload from the menu. Then choose the file you want to add to the lesson and it gets added to your lesson.',
+			'To upload Image, Video, Audio, PDF, PowerPoint, or Word documents from your system, click on the add icon and select upload from the menu. Then choose the file you want to add to the lesson and it gets added to your lesson.',
 	},
 	youtube: {
 		title: 'How to add a YouTube Video?',
