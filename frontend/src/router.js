@@ -56,6 +56,17 @@ const routes = [
 		props: true,
 	},
 	{
+		path: '/subscription',
+		name: 'Subscription',
+		component: () => import('@/pages/Subscription.vue'),
+	},
+	{
+		path: '/subscription/:subscriptionName/edit',
+		name: 'SubscriptionForm',
+		component: () => import('@/pages/SubscriptionForm.vue'),
+		props: true
+	},
+	{
 		path: '/billing/:type/:name',
 		name: 'Billing',
 		component: () => import('@/pages/Billing.vue'),
