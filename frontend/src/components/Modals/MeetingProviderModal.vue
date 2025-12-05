@@ -60,9 +60,17 @@
 					type="password"
 					:required="true"
 				/>
+				<FormControl
+					v-if="account.provider_type === 'Zoom'"
+					v-model="account.account_id"
+					:label="__('Account ID')"
+					type="text"
+					:required="true"
+					:description="__('Required for Zoom Server-to-Server OAuth')"
+				/>
 			</div>
 
-			<!-- Authorization Section - Only show for existing accounts -->
+			<!-- Authorization Section - Only show for existing Google Meet accounts -->
 			<div
 				v-if="accountID !== 'new' && account.provider_type === 'Google Meet'"
 				class="mt-6 p-4 border rounded-lg bg-surface-gray-1"
@@ -115,9 +123,27 @@
 				</div>
 			</div>
 
+			<!-- Zoom Info Section - Show for Zoom accounts -->
+			<div
+				v-if="account.provider_type === 'Zoom'"
+				class="mt-6 p-4 border rounded-lg bg-surface-gray-1"
+			>
+				<div class="flex items-center space-x-2">
+					<CheckCircle class="h-4 w-4 text-green-600" />
+					<div class="flex flex-col space-y-1">
+						<div class="font-semibold text-ink-gray-9">
+							{{ __('Server-to-Server OAuth') }}
+						</div>
+						<div class="text-sm text-ink-gray-6">
+							{{ __('Zoom uses Server-to-Server OAuth. No additional authorization needed after saving credentials.') }}
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<!-- Help text for new accounts -->
 			<div
-				v-if="accountID === 'new'"
+				v-if="accountID === 'new' && account.provider_type === 'Google Meet'"
 				class="mt-4 p-3 bg-surface-blue-1 border border-outline-blue-2 rounded-lg text-sm text-ink-blue-3"
 			>
 				<div class="flex items-start space-x-2">
@@ -127,12 +153,23 @@
 					</span>
 				</div>
 			</div>
+			<div
+				v-if="accountID === 'new' && account.provider_type === 'Zoom'"
+				class="mt-4 p-3 bg-surface-orange-1 border border-outline-orange-2 rounded-lg text-sm text-ink-orange-3"
+			>
+				<div class="flex items-start space-x-2">
+					<Info class="h-4 w-4 mt-0.5 flex-shrink-0" />
+					<span>
+						{{ __('Zoom credentials are validated when creating a meeting. Make sure your Account ID, Client ID, and Client Secret are correct.') }}
+					</span>
+				</div>
+			</div>
 		</template>
 	</Dialog>
 </template>
 <script setup lang="ts">
 import { call, Dialog, FormControl, toast } from 'frappe-ui'
-import { inject, reactive, ref, watch, onMounted } from 'vue'
+import { inject, reactive, ref, watch } from 'vue'
 import { User } from '@/components/Settings/types'
 import { openSettings, cleanError } from '@/utils'
 import Link from '@/components/Controls/Link.vue'
@@ -154,6 +191,7 @@ interface MeetingProvider {
 	member: string
 	client_id: string
 	client_secret: string
+	account_id?: string
 	refresh_token?: string
 }
 
@@ -185,6 +223,7 @@ const isRevoking = ref(false)
 
 const providerOptions = [
 	{ label: 'Google Meet', value: 'Google Meet' },
+	{ label: 'Zoom', value: 'Zoom' },
 	{ label: 'Microsoft Teams', value: 'Microsoft Teams' },
 ]
 
@@ -196,6 +235,7 @@ const account = reactive({
 	member: user?.data?.name || '',
 	client_id: '',
 	client_secret: '',
+	account_id: '',
 })
 
 const props = defineProps({
@@ -218,16 +258,42 @@ watch(
 					account.member = acc.member
 					account.client_id = acc.client_id
 					account.client_secret = acc.client_secret
+					// Only set account_id for Zoom
+					if (acc.provider_type === 'Zoom') {
+						account.account_id = acc.account_id || ''
+					}
 				}
 			})
-			// Check authorization status for existing accounts
-			await checkAuthorizationStatus()
+			// Check authorization for Google Meet
+			if (account.provider_type === 'Google Meet') {
+				await checkAuthorizationStatus()
+			}
 		}
 	}
 )
 
-watch(show, (val) => {
-	if (!val) {
+watch(show, async (val) => {
+	if (val && props.accountID !== 'new') {
+		// Modal opened - load data
+		meetingProviders.value?.data.forEach((acc) => {
+			if (acc.name === props.accountID) {
+				account.name = acc.name
+				account.account_name = acc.account_name || acc.name
+				account.enabled = acc.enabled || false
+				account.provider_type = acc.provider_type || 'Google Meet'
+				account.member = acc.member
+				account.client_id = acc.client_id
+				account.client_secret = acc.client_secret
+				if (acc.provider_type === 'Zoom') {
+					account.account_id = acc.account_id || ''
+				}
+			}
+		})
+		if (account.provider_type === 'Google Meet') {
+			await checkAuthorizationStatus()
+		}
+	} else if (!val) {
+		// Modal closed - reset form
 		account.name = ''
 		account.account_name = ''
 		account.enabled = false
@@ -235,6 +301,7 @@ watch(show, (val) => {
 		account.member = user?.data?.name || ''
 		account.client_id = ''
 		account.client_secret = ''
+		account.account_id = ''
 		isAuthorized.value = false
 	}
 })
@@ -244,7 +311,7 @@ const checkAuthorizationStatus = async () => {
 
 	isCheckingAuth.value = true
 	try {
-		const result = await call('lms.lms.api.check_google_meet_authorization', {
+		const result = await call('lms.lms.api.google_meet_check_authorization', {
 			settings_name: props.accountID,
 		})
 		isAuthorized.value = result.is_authorized
@@ -261,7 +328,7 @@ const authorizeProvider = async () => {
 		const currentUrl = window.location.origin
 		const redirectUri = `${currentUrl}/lms/google/auth`
 
-		const result = await call('lms.lms.api.get_google_meet_authorization_url', {
+		const result = await call('lms.lms.api.google_meet_get_auth_url', {
 			settings_name: props.accountID,
 			redirect_uri: redirectUri,
 		})
@@ -299,7 +366,7 @@ const authorizeProvider = async () => {
 const revokeAuthorization = async () => {
 	isRevoking.value = true
 	try {
-		await call('lms.lms.api.revoke_google_meet_authorization', {
+		await call('lms.lms.api.google_meet_revoke_authorization', {
 			settings_name: props.accountID,
 		})
 		isAuthorized.value = false

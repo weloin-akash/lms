@@ -1751,6 +1751,129 @@ def google_meet_revoke_authorization(settings_name):
 	oauth_provider = get_oauth_provider(settings_name)
 	return oauth_provider.revoke_authorization()
 
+@frappe.whitelist()
+def google_meet_get_auth_url(settings_name, redirect_uri=None):
+	"""
+	Get Google OAuth authorization URL for Google Meet integration
+
+	Args:
+		settings_name: Name of the LMS Meeting Provider Settings document
+		redirect_uri: Optional custom redirect URI. If not provided, uses default.
+
+	Returns:
+		dict: Contains authorization_url to redirect user to
+	"""
+	from lms.lms.doctype.lms_meeting_provider_settings.oauth import get_oauth_provider
+
+	if not redirect_uri:
+		# Default redirect URI - frontend route
+		redirect_uri = "http://localhost:8000/lms/google/auth"
+
+	oauth_provider = get_oauth_provider(settings_name)
+	auth_url = oauth_provider.get_authorization_url(redirect_uri)
+
+	return {
+		"authorization_url": auth_url,
+		"redirect_uri": redirect_uri,
+	}
+
+
+@frappe.whitelist(allow_guest=True)
+def google_meet_oauth_callback(code=None, state=None, error=None, error_description=None):
+	"""
+	Handle Google OAuth callback after user authorization
+
+	This endpoint receives the authorization code from Google and exchanges it
+	for access and refresh tokens.
+
+	Args:
+		code: Authorization code from Google
+		state: State token for verification
+		error: Error code if authorization failed
+		error_description: Error description if authorization failed
+
+	Returns:
+		dict: Success or error response (consumed by frontend)
+	"""
+	from lms.lms.doctype.lms_meeting_provider_settings.oauth_google import GoogleOAuthProvider
+
+	# Handle error response from Google
+	if error:
+		error_msg = error_description or error
+		frappe.log_error(
+			title="Google Meet OAuth Error",
+			message=f"Error: {error}, Description: {error_description}"
+		)
+		frappe.throw(_("Google Meet authorization failed: {0}").format(error_msg))
+
+	if not code or not state:
+		frappe.throw(_("Missing authorization code or state parameter."))
+
+	# Get settings from cached state
+	cached_state = frappe.cache().get_value(f"google_oauth_state:{state}")
+	if not cached_state:
+		frappe.throw(_("Invalid or expired state token."))
+
+	settings_name = cached_state.get("settings_name")
+	settings = frappe.get_doc("LMS Meeting Provider Settings", settings_name)
+	oauth_provider = GoogleOAuthProvider(settings)
+
+	# Get redirect URI (must match what was used in authorization request)
+	redirect_uri = "http://localhost:8000/lms/google/auth"
+
+	result = oauth_provider.exchange_code_for_tokens(code, redirect_uri, state)
+
+	return {
+		"success": True,
+		"message": _("Google Meet has been successfully connected!"),
+	}
+
+
+@frappe.whitelist()
+def google_meet_check_authorization(settings_name):
+	"""
+	Check if a Google Meet provider settings has valid authorization
+
+	Args:
+		settings_name: Name of the LMS Meeting Provider Settings document
+
+	Returns:
+		dict: Contains is_authorized boolean and message
+	"""
+	from lms.lms.doctype.lms_meeting_provider_settings.oauth import get_oauth_provider
+
+	try:
+		oauth_provider = get_oauth_provider(settings_name)
+		is_authorized = oauth_provider.is_authorized()
+
+		return {
+			"is_authorized": is_authorized,
+			"message": _("Google Meet is authorized and ready to use.") if is_authorized
+				else _("Google Meet requires authorization. Please click 'Authorize' to connect your account."),
+		}
+	except Exception as e:
+		return {
+			"is_authorized": False,
+			"message": _("Error checking authorization: {0}").format(str(e)),
+		}
+
+
+@frappe.whitelist()
+def google_meet_revoke_authorization(settings_name):
+	"""
+	Revoke Google Meet authorization by clearing stored tokens
+
+	Args:
+		settings_name: Name of the LMS Meeting Provider Settings document
+
+	Returns:
+		dict: Success status and message
+	"""
+	from lms.lms.doctype.lms_meeting_provider_settings.oauth import get_oauth_provider
+
+	oauth_provider = get_oauth_provider(settings_name)
+	return oauth_provider.revoke_authorization()
+
 
 #Get Instructror Review
 @frappe.whitelist()

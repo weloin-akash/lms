@@ -345,6 +345,136 @@ def create_meeting_provider_class(
 
 
 @frappe.whitelist()
+def create_meeting_provider_class(
+	batch_name,
+	meeting_provider,
+	title,
+	duration,
+	date,
+	time,
+	timezone,
+	description=None,
+):
+	"""
+	Create a live class using a meeting provider (Google Meet, Microsoft Teams, etc.)
+
+	Args:
+		batch_name: Name of the LMS Batch
+		meeting_provider: Name of the LMS Meeting Provider Settings document
+		title: Title of the live class
+		duration: Duration in minutes
+		date: Date of the class (YYYY-MM-DD)
+		time: Time of the class (HH:mm)
+		timezone: Timezone for the class
+		description: Optional description
+
+	Returns:
+		LMS Live Class document
+	"""
+	# Allow both Moderators and Batch Evaluators
+	if not frappe.has_permission("LMS Live Class", "create"):
+		frappe.throw(_("You do not have permission to create live classes."))
+
+	# Get the meeting provider settings
+	provider_settings = frappe.get_doc("LMS Meeting Provider Settings", meeting_provider)
+
+	if not provider_settings.enabled:
+		frappe.throw(_("Please enable the meeting provider to use this feature."))
+
+	# Calculate start and end times in ISO format
+	from datetime import datetime
+	import pytz
+
+	tz = pytz.timezone(timezone)
+	local_dt = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
+	local_dt = tz.localize(local_dt)
+	start_time_iso = local_dt.isoformat()
+	end_time_iso = (local_dt + timedelta(minutes=int(duration))).isoformat()
+
+	# Create meeting based on provider type
+	if provider_settings.provider_type == "Google Meet":
+		from lms.lms.doctype.lms_meeting_provider_settings.google_meet_api import schedule_meeting
+
+		meeting_result = schedule_meeting(
+			settings_name=meeting_provider,
+			title=title,
+			start_time=start_time_iso,
+			end_time=end_time_iso,
+			description=description,
+			send_notifications=False,
+		)
+
+		if not meeting_result.get("success"):
+			frappe.throw(_("Failed to create Google Meet meeting."))
+
+		# Create the LMS Live Class document
+		class_doc = frappe.get_doc({
+			"doctype": "LMS Live Class",
+			"title": title,
+			"description": description,
+			"date": date,
+			"time": time,
+			"duration": duration,
+			"timezone": timezone,
+			"batch_name": batch_name,
+			"host": frappe.session.user,
+			"join_url": meeting_result.get("meeting_uri"),
+			"start_url": meeting_result.get("html_link"),
+			"meeting_id": meeting_result.get("event_id"),
+			"meeting_provider": meeting_provider,
+			"provider_type": "Google Meet",
+		})
+		class_doc.insert()
+
+		return class_doc
+
+	elif provider_settings.provider_type == "Zoom":
+		from lms.lms.doctype.lms_meeting_provider_settings.zoom_api import schedule_meeting as zoom_schedule_meeting
+
+		meeting_result = zoom_schedule_meeting(
+			settings_name=meeting_provider,
+			title=title,
+			start_time=start_time_iso,
+			end_time=end_time_iso,
+			description=description,
+			timezone=timezone,
+		)
+
+		if not meeting_result.get("success"):
+			frappe.throw(_("Failed to create Zoom meeting."))
+
+		# Create the LMS Live Class document
+		class_doc = frappe.get_doc({
+			"doctype": "LMS Live Class",
+			"title": title,
+			"description": description,
+			"date": date,
+			"time": time,
+			"duration": duration,
+			"timezone": timezone,
+			"batch_name": batch_name,
+			"host": frappe.session.user,
+			"join_url": meeting_result.get("join_url"),
+			"start_url": meeting_result.get("start_url"),
+			"meeting_id": meeting_result.get("meeting_id"),
+			"uuid": meeting_result.get("uuid"),
+			"password": meeting_result.get("password"),
+			"meeting_provider": meeting_provider,
+			"provider_type": "Zoom",
+		})
+		class_doc.insert()
+
+		return class_doc
+
+	elif provider_settings.provider_type == "Microsoft Teams":
+		# Future implementation for Microsoft Teams
+		frappe.throw(_("Microsoft Teams integration is not yet implemented."))
+
+	else:
+		frappe.throw(_("Unsupported meeting provider type: {0}").format(provider_settings.provider_type))
+
+
+@frappe.whitelist()
 def get_batch_timetable(batch):
 	timetable = frappe.get_all(
 		"LMS Batch Timetable",

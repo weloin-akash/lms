@@ -93,10 +93,7 @@
 								<BatchStudents :batch="batch" />
 							</div>
 							<div v-else-if="tab.label == 'Classes'">
-								<LiveClass
-									:batch="batch.data.name"
-									:zoomAccount="batch.data.zoom_account"
-								/>
+								<LiveClass :batch="batch.data.name" />
 							</div>
 							<div v-else-if="tab.label == 'Assessments'">
 								<Assessments :batch="batch.data.name" />
