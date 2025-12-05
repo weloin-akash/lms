@@ -15,24 +15,6 @@
 					  }
 			"
 		>
-			<!-- <div class="flex items-center flex-wrap relative top-4 px-2 w-fit">
-				<div
-					v-if="course.featured"
-					class="flex items-center space-x-1 text-xs text-ink-amber-3 bg-surface-white border border-outline-amber-1 px-2 py-0.5 rounded-md mr-1 mb-1"
-				>
-					<Star class="size-3 stroke-2" />
-					<span>
-						{{ __('Featured') }}
-					</span>
-				</div>
-				<div
-					v-if="course.tags"
-					v-for="tag in course.tags?.split(', ')"
-					class="text-xs border bg-surface-white text-ink-gray-9 px-2 py-0.5 rounded-md mb-1 mr-1"
-				>
-					{{ tag }}
-				</div>
-			</div> -->
 			<div
 				v-if="!course.image"
 				class="flex items-center justify-center text-white flex-1 font-extrabold my-auto px-5 text-center leading-6 h-full"
@@ -152,16 +134,6 @@ const getGradientColor = () => {
 	let color = props.course.card_gradient?.toLowerCase() || 'blue'
 	let colorMap = theme.backgroundColor[color]
 	return `linear-gradient(to top right, black, ${colorMap[400]})`
-	/* return `bg-gradient-to-br from-${color}-100 via-${color}-200 to-${color}-400` */
-	/* return `linear-gradient(to bottom right, ${colorMap[100]}, ${colorMap[400]})` */
-	/* return `radial-gradient(ellipse at 80% 20%, black 20%, ${colorMap[500]} 100%)` */
-	/* return `radial-gradient(ellipse at 30% 70%, black 50%, ${colorMap[500]} 100%)` */
-	/* return `radial-gradient(ellipse at 80% 20%, ${colorMap[100]} 0%, ${colorMap[300]} 50%, ${colorMap[500]} 100%)` */
-	/* return `conic-gradient(from 180deg at 50% 50%, ${colorMap[100]} 0%, ${colorMap[200]} 50%, ${colorMap[400]} 100%)` */
-	/* return `linear-gradient(135deg, ${colorMap[100]}, ${colorMap[300]}), linear-gradient(120deg, rgba(255,255,255,0.4) 0%, transparent 60%) ` */
-	/* return `radial-gradient(circle at 20% 30%, ${colorMap[100]} 0%, transparent 40%),
-		radial-gradient(circle at 80% 40%, ${colorMap[200]} 0%, transparent 50%),
-		linear-gradient(135deg, ${colorMap[300]} 0%, ${colorMap[400]} 100%);` */
 }
 </script>
 <style>

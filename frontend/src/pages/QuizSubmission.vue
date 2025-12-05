@@ -1,5 +1,5 @@
 <template>
-	<header
+	<!-- <header
 		class="sticky top-0 z-10 backdrop-blur-md bg-[#fef9f3]/80 border-b border-gray-200/50 px-6 py-4 shadow-sm"
 	>
 		<div class="flex items-center justify-between">
@@ -28,7 +28,28 @@
 				</Button>
 			</div>
 		</div>
-	</header>
+	</header> -->
+	<AppHeader description="Grade student quiz submission" :breadcrumbs="breadcrumbs">
+		<template #icon>
+			<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+			</svg>
+		</template>
+		<!-- <template #breadcrumbs>
+			<Breadcrumbs :items="breadcrumbs" />
+		</template> -->
+		<template #actions>
+			<Badge
+					v-if="submissionDetails.isDirty"
+					class="bg-orange-100 text-[#ed8e22] border border-orange-200"
+				>
+					{{ __('Not Saved') }}
+				</Badge>
+			<Button class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-2.5 rounded-lg font-medium" @click="saveSubmission()">
+				{{ __('Save') }}
+			</Button>
+		</template>
+	</AppHeader>
 	<div v-if="submissionDetails.doc" class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100/50 py-8 px-6">
 		<div class="max-w-4xl mx-auto">
 			<!-- Submission Details Card -->
@@ -87,14 +108,14 @@
 						<div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
 							<span class="text-sm font-bold text-[#ed8e22]">{{ index + 1 }}</span>
 						</div>
-						<h3 class="text-lg font-semibold text-gray-900">{{ __('Question {0}', [index + 1]) }}</h3>
+						<h3 class="text-lg font-semibold text-gray-900">{{ __('Question {0}').format(index + 1) }}</h3>
 					</div>
 					
 					<!-- Question -->
 					<div class="mb-6">
 						<div class="bg-gray-50 rounded-lg p-4">
 							<h4 class="text-sm font-semibold text-gray-700 mb-2">{{ __('Question') }}</h4>
-							<div class="text-gray-900 leading-relaxed" v-html="row.question"></div>
+							<div class="text-gray-900 leading-relaxed" v-html="row.question || ''"></div>
 						</div>
 					</div>
 
@@ -102,7 +123,7 @@
 					<div class="mb-6">
 						<div class="bg-blue-50 rounded-lg p-4">
 							<h4 class="text-sm font-semibold text-gray-700 mb-2">{{ __('Student Answer') }}</h4>
-							<div class="text-gray-900 leading-relaxed" v-html="row.answer"></div>
+							<div class="text-gray-900 leading-relaxed" v-html="row.answer || ''"></div>
 						</div>
 					</div>
 
@@ -200,6 +221,9 @@ const saveSubmission = () => {
 	submissionDetails.save.submit(
 		{},
 		{
+			onSuccess() {
+				toast.success(__('Submission saved successfully.'))
+			},
 			onError(err) {
 				toast.error(err.messages?.[0] || err)
 			},

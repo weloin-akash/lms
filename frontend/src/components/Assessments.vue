@@ -217,7 +217,7 @@ const removeAssessments = (selections, unselectAll) => {
 }
 
 const getRowRoute = (row) => {
-	if (user.data?.is_evaluator && !user.data?.is_student) {
+	if (user.data?.is_evaluator) {
 		if (row.assessment_type == 'LMS Assignment') {
 			return {
 				name: 'AssignmentSubmissionList',

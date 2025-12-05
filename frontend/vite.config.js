@@ -67,6 +67,8 @@ export default defineConfig({
 		alias: {
 			'@': path.resolve(__dirname, 'src'),
 			'tailwind.config.js': path.resolve(__dirname, 'tailwind.config.js'),
+			'@nuxtapp': path.resolve(__dirname, '../../maxlms/nuxtapp'),
+			'lucide-vue-next': path.resolve(__dirname, 'node_modules/lucide-vue-next'),
 		},
 	},
 	optimizeDeps: {
@@ -78,6 +80,15 @@ export default defineConfig({
 			'interactjs',
 			'highlight.js',
 			'plyr',
+			'lucide-vue-next',
 		],
+	},
+	build: {
+		rollupOptions: {
+			external: [],
+		},
+		commonjsOptions: {
+			include: [/node_modules/, /maxlms/],
+		},
 	},
 })

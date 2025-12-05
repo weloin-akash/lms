@@ -40,12 +40,12 @@
 				</Button>
 			</template>
 		</AppHeader>
-	<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100/50 py-8 px-6">
-		<!-- Details Card -->
-		<div class="bg-white rounded-xl shadow-sm border border-gray-200/50 p-8 mb-8">
-			<div class="flex items-center space-x-3 mb-6">
-				<div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-					<svg class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100/50 py-8 px-6">
+			<!-- Details Card -->
+			<div class="bg-white rounded-xl shadow-sm border border-gray-200/50 p-8 mb-8">
+				<div class="flex items-center space-x-3 mb-6">
+					<div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+						<svg class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 					</svg>
 				</div>

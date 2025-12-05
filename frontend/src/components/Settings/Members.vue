@@ -10,7 +10,7 @@
 				</div>
 			</div>
 			<div class="flex item-center space-x-2">
-				<Button variant="solid" @click="() => (showForm = !showForm)">
+				<Button variant="solid" @click="() => (showForm = !showForm)" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white transition-all duration-200 rounded-lg px-3 py-1.5 border-0">
 					<template #prefix>
 						<Plus class="size-4 stroke-1.5" />
 					</template>

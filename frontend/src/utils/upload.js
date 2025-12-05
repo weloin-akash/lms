@@ -71,6 +71,16 @@ export class Upload {
 				file.file_url
 			)}" width='100%' height='700px' class="mb-4" type="application/pdf"></iframe>`
 			return
+		} else if (this.isPPT(file.file_type)) {
+			const fullUrl = `${window.location.origin}${file.file_url}`
+			const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fullUrl)}`
+			this.wrapper.innerHTML = `<iframe src="${viewerUrl}" width='100%' height='700px' class="mb-4" frameborder='0'></iframe>`
+			return
+		} else if (this.isDoc(file.file_type)) {
+			const fullUrl = `${window.location.origin}${file.file_url}`
+			const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fullUrl)}`
+			this.wrapper.innerHTML = `<iframe src="${viewerUrl}" width='100%' height='700px' class="mb-4" frameborder='0'></iframe>`
+			return
 		} else {
 			this.wrapper.innerHTML = `<img class="mb-4" src=${encodeURI(
 				file.file_url
@@ -112,5 +122,13 @@ export class Upload {
 
 	isAudio(type) {
 		return ['mp3', 'wav', 'ogg'].includes(type.toLowerCase())
+	}
+
+	isPPT(type) {
+		return ['ppt', 'pptx'].includes(type.toLowerCase())
+	}
+
+	isDoc(type) {
+		return ['doc', 'docx'].includes(type.toLowerCase())
 	}
 }

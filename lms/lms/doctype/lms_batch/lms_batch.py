@@ -134,83 +134,214 @@ class LMSBatch(Document):
 			update_payment_record("LMS Batch", self.name)
 
 
+# @frappe.whitelist()
+# def create_live_class(
+# 	batch_name,
+# 	zoom_account,
+# 	title,
+# 	duration,
+# 	date,
+# 	time,
+# 	timezone,
+# 	auto_recording,
+# 	description=None,
+# ):
+# 	frappe.only_for("Moderator")
+# 	payload = {
+# 		"topic": title,
+# 		"start_time": format_datetime(f"{date} {time}", "yyyy-MM-ddTHH:mm:ssZ"),
+# 		"duration": duration,
+# 		"agenda": description,
+# 		"private_meeting": True,
+# 		"auto_recording": "none" if auto_recording == "No Recording" else auto_recording.lower(),
+# 		"timezone": timezone,
+# 	}
+# 	headers = {
+# 		"Authorization": "Bearer " + authenticate(zoom_account),
+# 		"content-type": "application/json",
+# 	}
+# 	response = requests.post(
+# 		"https://api.zoom.us/v2/users/me/meetings", headers=headers, data=json.dumps(payload)
+# 	)
+
+# 	if response.status_code == 201:
+# 		data = json.loads(response.text)
+# 		payload.update(
+# 			{
+# 				"doctype": "LMS Live Class",
+# 				"start_url": data.get("start_url"),
+# 				"join_url": data.get("join_url"),
+# 				"meeting_id": data.get("id"),
+# 				"uuid": data.get("uuid"),
+# 				"title": title,
+# 				"host": frappe.session.user,
+# 				"date": date,
+# 				"time": time,
+# 				"batch_name": batch_name,
+# 				"password": data.get("password"),
+# 				"description": description,
+# 				"auto_recording": auto_recording,
+# 				"zoom_account": zoom_account,
+# 			}
+# 		)
+# 		class_details = frappe.get_doc(payload)
+# 		class_details.save()
+# 		return class_details
+# 	else:
+# 		frappe.throw(_("Error creating live class. Please try again. {0}").format(response.text))
+
+
+# def authenticate(zoom_account):
+# 	zoom = frappe.get_doc("LMS Zoom Settings", zoom_account)
+# 	if not zoom.enabled:
+# 		frappe.throw(_("Please enable the zoom account to use this feature."))
+
+# 	authenticate_url = (
+# 		f"https://zoom.us/oauth/token?grant_type=account_credentials&account_id={zoom.account_id}"
+# 	)
+
+# 	headers = {
+# 		"Authorization": "Basic "
+# 		+ base64.b64encode(
+# 			bytes(
+# 				zoom.client_id + ":" + zoom.get_password(fieldname="client_secret", raise_exception=False),
+# 				encoding="utf8",
+# 			)
+# 		).decode()
+# 	}
+# 	response = requests.request("POST", authenticate_url, headers=headers)
+# 	return response.json()["access_token"]
+
+
 @frappe.whitelist()
-def create_live_class(
+def create_meeting_provider_class(
 	batch_name,
-	zoom_account,
+	meeting_provider,
 	title,
 	duration,
 	date,
 	time,
 	timezone,
-	auto_recording,
 	description=None,
 ):
-	frappe.only_for("Moderator")
-	payload = {
-		"topic": title,
-		"start_time": format_datetime(f"{date} {time}", "yyyy-MM-ddTHH:mm:ssZ"),
-		"duration": duration,
-		"agenda": description,
-		"private_meeting": True,
-		"auto_recording": "none" if auto_recording == "No Recording" else auto_recording.lower(),
-		"timezone": timezone,
-	}
-	headers = {
-		"Authorization": "Bearer " + authenticate(zoom_account),
-		"content-type": "application/json",
-	}
-	response = requests.post(
-		"https://api.zoom.us/v2/users/me/meetings", headers=headers, data=json.dumps(payload)
-	)
+	"""
+	Create a live class using a meeting provider (Google Meet, Microsoft Teams, etc.)
 
-	if response.status_code == 201:
-		data = json.loads(response.text)
-		payload.update(
-			{
-				"doctype": "LMS Live Class",
-				"start_url": data.get("start_url"),
-				"join_url": data.get("join_url"),
-				"meeting_id": data.get("id"),
-				"uuid": data.get("uuid"),
-				"title": title,
-				"host": frappe.session.user,
-				"date": date,
-				"time": time,
-				"batch_name": batch_name,
-				"password": data.get("password"),
-				"description": description,
-				"auto_recording": auto_recording,
-				"zoom_account": zoom_account,
-			}
+	Args:
+		batch_name: Name of the LMS Batch
+		meeting_provider: Name of the LMS Meeting Provider Settings document
+		title: Title of the live class
+		duration: Duration in minutes
+		date: Date of the class (YYYY-MM-DD)
+		time: Time of the class (HH:mm)
+		timezone: Timezone for the class
+		description: Optional description
+
+	Returns:
+		LMS Live Class document
+	"""
+	# Allow both Moderators and Batch Evaluators
+	if not frappe.has_permission("LMS Live Class", "create"):
+		frappe.throw(_("You do not have permission to create live classes."))
+
+	# Get the meeting provider settings
+	provider_settings = frappe.get_doc("LMS Meeting Provider Settings", meeting_provider)
+
+	if not provider_settings.enabled:
+		frappe.throw(_("Please enable the meeting provider to use this feature."))
+
+	# Calculate start and end times in ISO format
+	from datetime import datetime
+	import pytz
+
+	tz = pytz.timezone(timezone)
+	local_dt = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
+	local_dt = tz.localize(local_dt)
+	start_time_iso = local_dt.isoformat()
+	end_time_iso = (local_dt + timedelta(minutes=int(duration))).isoformat()
+
+	# Create meeting based on provider type
+	if provider_settings.provider_type == "Google Meet":
+		from lms.lms.doctype.lms_meeting_provider_settings.google_meet_api import schedule_meeting
+
+		meeting_result = schedule_meeting(
+			settings_name=meeting_provider,
+			title=title,
+			start_time=start_time_iso,
+			end_time=end_time_iso,
+			description=description,
+			send_notifications=False,
 		)
-		class_details = frappe.get_doc(payload)
-		class_details.save()
-		return class_details
+
+		if not meeting_result.get("success"):
+			frappe.throw(_("Failed to create Google Meet meeting."))
+
+		# Create the LMS Live Class document
+		class_doc = frappe.get_doc({
+			"doctype": "LMS Live Class",
+			"title": title,
+			"description": description,
+			"date": date,
+			"time": time,
+			"duration": duration,
+			"timezone": timezone,
+			"batch_name": batch_name,
+			"host": frappe.session.user,
+			"join_url": meeting_result.get("meeting_uri"),
+			"start_url": meeting_result.get("html_link"),
+			"meeting_id": meeting_result.get("event_id"),
+			"meeting_provider": meeting_provider,
+			"provider_type": "Google Meet",
+		})
+		class_doc.insert()
+
+		return class_doc
+	
+
+    #Zoom Live Class 
+	elif provider_settings.provider_type == "Zoom":
+		from lms.lms.doctype.lms_meeting_provider_settings.zoom_meeting import create_live_class
+
+		meeting_result = create_live_class(
+			batch_name = batch_name,
+			zoom_account="", #Zoom Account Not find 
+			title=title,
+			duration=duration,
+			date=date,
+			time=time,
+			timezone=timezone,
+			auto_recording=False,
+			description = None
+		)
+		if not meeting_result.get("success"):
+			frappe.throw(_("Failed to create Zoom meeting."))
+
+			class_doc = frappe.get_doc({
+			"doctype": "LMS Live Class",
+			"title": title,
+			"description": description,
+			"date": date,
+			"time": time,
+			"duration": duration,
+			"timezone": timezone,
+			"batch_name": batch_name,
+			"host": frappe.session.user,
+			"join_url": meeting_result.get("meeting_uri"),
+			"start_url": meeting_result.get("html_link"),
+			"meeting_id": meeting_result.get("event_id"),
+			"meeting_provider": meeting_provider,
+			"provider_type": "Zoom",
+		})
+		class_doc.insert()
+
+		return class_doc		
+
+	elif provider_settings.provider_type == "Microsoft Teams":
+		# Future implementation for Microsoft Teams
+		frappe.throw(_("Microsoft Teams integration is not yet implemented."))
+
 	else:
-		frappe.throw(_("Error creating live class. Please try again. {0}").format(response.text))
-
-
-def authenticate(zoom_account):
-	zoom = frappe.get_doc("LMS Zoom Settings", zoom_account)
-	if not zoom.enabled:
-		frappe.throw(_("Please enable the zoom account to use this feature."))
-
-	authenticate_url = (
-		f"https://zoom.us/oauth/token?grant_type=account_credentials&account_id={zoom.account_id}"
-	)
-
-	headers = {
-		"Authorization": "Basic "
-		+ base64.b64encode(
-			bytes(
-				zoom.client_id + ":" + zoom.get_password(fieldname="client_secret", raise_exception=False),
-				encoding="utf8",
-			)
-		).decode()
-	}
-	response = requests.request("POST", authenticate_url, headers=headers)
-	return response.json()["access_token"]
+		frappe.throw(_("Unsupported meeting provider type: {0}").format(provider_settings.provider_type))
 
 
 @frappe.whitelist()

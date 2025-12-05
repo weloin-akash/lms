@@ -249,6 +249,7 @@ import {
 	MessageCircle,
 	Globe,
 	ClipboardPen,
+	Award as Certificate,
 } from 'lucide-vue-next'
 import { formatTime } from '@/utils'
 import { sessionStore } from '@/stores/session'

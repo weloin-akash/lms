@@ -23,7 +23,7 @@
 			</div>
 		</div>
 		<div class="flex flex-row-reverse mt-auto">
-			<Button variant="solid" @click="update">
+			<Button variant="solid" @click="update" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white transition-all duration-200 rounded-lg px-3 py-1.5 border-0">
 				{{ __('Update') }}
 			</Button>
 		</div>

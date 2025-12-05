@@ -19,7 +19,7 @@
 						{{ __('saving...') }}
 					</span>
 				</div>
-				<Button @click="() => showCategoryForm()">
+				<Button @click="() => showCategoryForm()" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white transition-all duration-200 rounded-lg px-3 py-1.5 border-0">
 					<template #prefix>
 						<Plus v-if="!showForm" class="h-3 w-3 stroke-1.5" />
 						<X v-else class="h-3 w-3 stroke-1.5" />
@@ -39,7 +39,7 @@
 				:placeholder="__('Category Name')"
 				class="flex-1"
 			/>
-			<Button @click="addCategory()" variant="subtle">
+			<Button @click="addCategory()" variant="subtle" class="!bg-[#66bb6a] hover:!bg-[#088304] text-white transition-all duration-200 rounded-lg px-3 py-1.5 border-0">
 				{{ __('Add') }}
 			</Button>
 		</div>

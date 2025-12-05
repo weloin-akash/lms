@@ -99,6 +99,18 @@ const routes = [
 				component: () =>
 					import('@/pages/ProfileEvaluationSchedule.vue'),
 			},
+			{
+				name: 'ProfileReview',
+				path: 'reviews',
+				component: () =>
+					import('@/pages/ProfileReview.vue'),
+			},
+			{
+				name: 'ProfileCourse',
+				path: 'course',
+				component: () =>
+					import('@/pages/ProfileCourse.vue'),
+			},
 		],
 	},
 	{
@@ -236,6 +248,11 @@ const routes = [
 				'@/pages/ProgrammingExercises/ProgrammingExerciseSubmission.vue'
 			),
 		props: true,
+	},
+	{
+		path: '/google/auth',
+		name: 'GoogleAuthCallback',
+		component: () => import('@/pages/GoogleAuthCallback.vue'),
 	},
 ]
 

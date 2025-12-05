@@ -77,16 +77,17 @@
 					</p>
 				</div>
 			</div>
-			<Button 
-				v-if="!readOnlyMode" 
-				@click="openStudentModal()"
-				class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-2.5 rounded-lg font-medium !border-0"
-			>
-				<template #prefix>
-					<Plus class="h-4 w-4" />
-				</template>
-				{{ __('Add') }}
-			</Button>
+			<div v-if="!readOnlyMode" class="flex items-center space-x-2">
+				<Button
+					@click="openStudentModal()"
+					class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-2.5 rounded-lg font-medium !border-0"
+				>
+					<template #prefix>
+						<Plus class="h-4 w-4" />
+					</template>
+					{{ __('Add Student') }}
+				</Button>
+			</div>
 		</div>
 
 		<div v-if="students.data?.length">

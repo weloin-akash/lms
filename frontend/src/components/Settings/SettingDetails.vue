@@ -19,7 +19,7 @@
 
 		<SettingFields :fields="fields" :data="data.doc" />
 		<div class="flex flex-row-reverse mt-auto">
-			<Button variant="solid" :loading="data.save.loading" @click="update">
+			<Button variant="solid" :loading="data.save.loading" @click="update" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white transition-all duration-200 rounded-lg px-3 py-1.5 border-0">
 				{{ __('Update') }}
 			</Button>
 		</div>

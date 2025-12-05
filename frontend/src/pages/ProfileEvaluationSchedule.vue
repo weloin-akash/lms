@@ -1,8 +1,8 @@
 <template>
 	<div class="mt-7 mb-20">
-		<div class="flex h-screen flex-col overflow-hidden">
+		<div class="flex h-screen flex-col overflow-hidden" 
+				v-if="evaluations.data?.length">
 			<Calendar
-				v-if="evaluations.data?.length"
 				:config="{
 					defaultMode: 'Month',
 					disableModes: ['Day', 'Week'],
@@ -35,6 +35,14 @@
 				</template>
 			</Calendar>
 		</div>
+		    <div class="mt-7 mb-10" v-else>
+        <h2 class="mb-3 text-lg font-semibold text-ink-gray-9">
+            {{ __('Shedule') }}
+        </h2>
+        <div class="text-ink-gray-7 text-sm italic">
+            {{ __('No Shedule Events') }}
+        </div>
+    </div>
 	</div>
 	<Event v-model="showEvent" :event="currentEvent" />
 </template>

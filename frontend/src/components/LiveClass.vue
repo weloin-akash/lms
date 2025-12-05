@@ -13,14 +13,24 @@
 		<div class="text-lg font-semibold text-ink-gray-9">
 			{{ __('Live Class') }}
 		</div>
-		<Button v-if="canCreateClass()" @click="openLiveClassModal" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white !border-0 shadow-lg hover:shadow-xl transition-all duration-200 !outline-none focus:!outline-none focus:!ring-2 focus:!ring-[#ed8e22] focus:!ring-offset-2">
-			<template #prefix>
-				<Plus class="h-4 w-4" />
-			</template>
-			<span>
-				{{ __('Add') }}
-			</span>
-		</Button>
+		<div class="flex items-center space-x-2">
+			<Button v-if="canCreateClass()" @click="openLiveClassModal" class="!bg-[#ed8e22] hover:!bg-[#d47a1a] !text-white !border-0 shadow-lg hover:shadow-xl transition-all duration-200 !outline-none focus:!outline-none focus:!ring-2 focus:!ring-[#ed8e22] focus:!ring-offset-2">
+				<template #prefix>
+					<Video class="h-4 w-4" />
+				</template>
+				<span>
+					{{ __('Zoom Class') }}
+				</span>
+			</Button>
+			<Button v-if="canCreateMeetingProviderClass()" @click="openMeetingProviderModal" class="!bg-[#4285f4] hover:!bg-[#3367d6] !text-white !border-0 shadow-lg hover:shadow-xl transition-all duration-200 !outline-none focus:!outline-none focus:!ring-2 focus:!ring-[#4285f4] focus:!ring-offset-2">
+				<template #prefix>
+					<MonitorPlay class="h-4 w-4" />
+				</template>
+				<span>
+					{{ __('Add Class') }}
+				</span>
+			</Button>
+		</div>
 	</div>
 	<div
 		v-if="liveClasses.data?.length"
@@ -107,6 +117,12 @@
 		v-model:reloadLiveClasses="liveClasses"
 	/>
 
+	<MeetingProviderClassModal
+		:batch="props.batch"
+		v-model="showMeetingProviderModal"
+		v-model:reloadLiveClasses="liveClasses"
+	/>
+
 	<LiveClassAttendance v-model="showAttendance" :live_class="attendanceFor" />
 </template>
 <script setup>
@@ -119,14 +135,17 @@ import {
 	Monitor,
 	Info,
 	AlertCircle,
+	MonitorPlay,
 } from 'lucide-vue-next'
 import { inject, ref } from 'vue'
 import { formatTime } from '@/utils/'
 import LiveClassModal from '@/components/Modals/LiveClassModal.vue'
 import LiveClassAttendance from '@/components/Modals/LiveClassAttendance.vue'
+import MeetingProviderClassModal from '@/components/Modals/MeetingProviderClassModal.vue'
 
 const user = inject('$user')
 const showLiveClassModal = ref(false)
+const showMeetingProviderModal = ref(false)
 const dayjs = inject('$dayjs')
 const readOnlyMode = window.read_only_mode
 const showAttendance = ref(false)
@@ -164,9 +183,18 @@ const openLiveClassModal = () => {
 	showLiveClassModal.value = true
 }
 
+const openMeetingProviderModal = () => {
+	showMeetingProviderModal.value = true
+}
+
 const canCreateClass = () => {
 	if (readOnlyMode) return false
 	if (!props.zoomAccount) return false
+	return hasPermission()
+}
+
+const canCreateMeetingProviderClass = () => {
+	if (readOnlyMode) return false
 	return hasPermission()
 }
 
