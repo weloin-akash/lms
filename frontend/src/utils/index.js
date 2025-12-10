@@ -26,6 +26,7 @@ export function timeAgo(date) {
 	return useTimeAgo(date).value
 }
 
+
 export function formatTime(timeString) {
 	if (!timeString) return ''
 	const [hour, minute] = timeString.split(':').map(Number)
@@ -553,7 +554,7 @@ export const canCreateSubscription = () => {
 	const { userResource } = usersStore()
 	return (
 		!readOnlyMode &&
-		(userResource.data?.is_instructor || userResource.data?.is_moderator)
+		(userResource.data?.is_instructor)
 	)
 }
 export const enablePlyr = async () => {

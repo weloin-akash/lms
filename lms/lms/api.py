@@ -24,11 +24,12 @@ from frappe.utils import (
 	format_date,
 	get_datetime,
 	now,
+	random_string
 )
 
 from lms.lms.doctype.course_lesson.course_lesson import save_progress
 from lms.lms.utils import get_average_rating, get_lesson_count
-
+from payments.utils import get_payment_gateway_controller
 
 @frappe.whitelist()
 def autosave_section(section, code):
@@ -1907,6 +1908,7 @@ def get_all_course():
 
 @frappe.whitelist()
 def get_instructor_courses(username):
+	"""Fetch Insctructor Cources By Instructor username."""
 	values = {'username': username}
 	courses = frappe.db.sql("""
 						SELECT course.*
@@ -1919,3 +1921,85 @@ def get_instructor_courses(username):
 						ORDER BY course.creation DESC
 """,values=values, as_dict=1)
 	return courses
+
+
+@frappe.whitelist(allow_guest=True)
+def get_all_subscription():
+    """Fetch all subscriptions ignoring permissions."""
+    subscriptions = frappe.db.get_list(
+        "LMS Subscription",
+        fields=["*"],
+        ignore_permissions=True
+    )
+    return subscriptions
+
+
+@frappe.whitelist()
+def create_subscription_order(plan_name, amount, duration):
+    """Create a subscription order with Razorpay payment integration."""
+    try:
+        doc = frappe.new_doc("Subscription Doc")  # IF Subscription Doc NOT WORK THEN USE Conference Participant
+        doc.user = frappe.session.user
+        doc.subscription_plan = plan_name
+        doc.amount = amount
+        doc.duration_type = duration
+        doc.payment_date = now()
+        doc.notes = f"Thank you {frappe.session.user}"
+        doc.receipt = doc.name
+        doc.payment_status = "Unpaid"
+        doc.insert()
+
+        controller = get_payment_gateway_controller("Razorpay")
+        if not controller or not getattr(controller, "api_key", None):
+            frappe.throw("Razorpay payment gateway is not configured. Please contact admin.")
+
+        payment_details = {
+            "amount": int(amount * 100),
+            "currency": "INR",
+            "receipt": doc.name,
+            "payment_capture": 0
+        }
+
+        order = controller.create_order(**payment_details)
+
+        if not order or not order.get("id"):
+            frappe.throw("Failed to create Razorpay order. Please try again later.")
+        doc.payment_getway = "Razorpay"
+        doc.order_id = order["id"]
+        doc.payment_id = random_string(12)
+        doc.payment_status = "Pending"
+        doc.save()
+
+        return {
+            "participant": doc.name,
+            "order_id": order["id"],
+            "amount": payment_details["amount"],
+            "customer_name": frappe.get_value("User", frappe.session.user, "full_name"),
+            "customer_email": frappe.get_value("User", frappe.session.user, "email")
+        }
+
+    except frappe.ValidationError as ve:
+        return {"error": str(ve)}
+    except Exception as e:
+        frappe.log_error(message=str(e), title="Subscription Order Error")
+        return {"error": "Something went wrong while creating subscription order."}
+
+
+@frappe.whitelist()
+def verify_subscription_payment(payment_id, order_id, signature):
+    """Verify Razorpay payment and update participant doc"""
+    try:
+        doc = frappe.get_doc("Conference Participant", {"order_id": order_id})
+        if not doc:
+            frappe.throw("Order not found")
+
+        doc.razorpay_payment_id = payment_id
+        doc.payment_status = "Paid"
+        doc.save()
+        return {"status": "success"}
+
+    except frappe.ValidationError as ve:
+        return {"error": str(ve)}
+    except Exception as e:
+        frappe.log_error(message=str(e), title="Subscription Payment Verification Error")
+        return {"error": "Failed to verify payment."}
