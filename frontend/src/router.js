@@ -56,6 +56,17 @@ const routes = [
 		props: true,
 	},
 	{
+		path: '/streams',
+		name: 'Streams',
+		component: () => import('@/pages/Streams.vue'),
+	},
+	{
+		path: '/streams/:streamName',
+		name: 'StreamPage',
+		component: () => import('@/pages/StreamPage.vue'),
+		props: true,
+	},
+	{
 		path: '/billing/:type/:name',
 		name: 'Billing',
 		component: () => import('@/pages/Billing.vue'),

@@ -422,6 +422,12 @@ export function getSidebarLinks() {
 			activeFor: ['Batches', 'BatchDetail', 'Batch', 'BatchForm'],
 		},
 		{
+			label: 'Streams',
+			icon: 'Video',
+			to: 'Streams',
+			activeFor: ['Streams', 'StreamPage'],
+		},
+		{
 			label: 'Certified Members',
 			icon: 'GraduationCap',
 			to: 'CertifiedParticipants',

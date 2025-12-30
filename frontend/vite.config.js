@@ -62,6 +62,13 @@ export default defineConfig({
 	server: {
 		host: '0.0.0.0', // Accept connections from any network interface
 		allowedHosts: ['ps', 'fs', 'home'], // Explicitly allow this host
+		proxy: {
+			'/srs-api': {
+				target: 'http://localhost:1985',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/srs-api/, '/api/v1'),
+			},
+		},
 	},
 	resolve: {
 		alias: {

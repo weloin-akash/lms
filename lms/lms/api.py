@@ -1750,3 +1750,619 @@ def google_meet_revoke_authorization(settings_name):
 
 	oauth_provider = get_oauth_provider(settings_name)
 	return oauth_provider.revoke_authorization()
+
+
+# ============================================
+# Broadcast Stream APIs
+# ============================================
+
+@frappe.whitelist()
+def get_stream_config(stream_name):
+	"""
+	Get full stream configuration for teacher (supports both OBS and browser).
+
+	Args:
+		stream_name: LMS Broadcast Stream name
+
+	Returns:
+		dict: Complete stream config including RTMP and WebRTC URLs
+	"""
+	stream = frappe.get_doc("LMS Broadcast Stream", stream_name)
+
+	if stream.host != frappe.session.user:
+		frappe.throw(_("Only the host can access stream configuration"))
+
+	return {
+		"name": stream.name,
+		"title": stream.title,
+		"stream_key": stream.stream_key,
+		"status": stream.status,
+		# OBS config
+		"obs": {
+			"rtmp_url": stream.rtmp_url,
+			"stream_key": stream.stream_key,
+			"full_url": f"{stream.rtmp_url}/{stream.stream_key}"
+		},
+		# Browser WebRTC config
+		"browser": {
+			"webrtc_url": stream.webrtc_url,
+			"stream_key": stream.stream_key
+		},
+		# Playback
+		"playback_url": stream.playback_url
+	}
+
+
+@frappe.whitelist()
+def start_browser_stream(stream_name):
+	"""
+	Mark stream as starting from browser (updates source tracking).
+
+	Args:
+		stream_name: LMS Broadcast Stream name
+
+	Returns:
+		dict: WebRTC connection details
+	"""
+	stream = frappe.get_doc("LMS Broadcast Stream", stream_name)
+
+	if stream.host != frappe.session.user:
+		frappe.throw(_("Only the host can start this stream"))
+
+	stream.stream_source = "Browser"
+	stream.status = "Live"
+	stream.save()
+
+	frappe.publish_realtime(
+		event="stream_started",
+		message={"stream": stream.name, "source": "Browser"}
+	)
+
+	return {
+		"webrtc_url": stream.webrtc_url,
+		"stream_key": stream.stream_key,
+		"playback_url": stream.playback_url
+	}
+
+
+@frappe.whitelist()
+def stop_stream(stream_name):
+	"""
+	Stop an active stream.
+
+	Args:
+		stream_name: LMS Broadcast Stream name
+	"""
+	stream = frappe.get_doc("LMS Broadcast Stream", stream_name)
+
+	if stream.host != frappe.session.user:
+		frappe.throw(_("Only the host can stop this stream"))
+
+	stream.status = "Ended"
+	stream.save()
+
+	frappe.publish_realtime(
+		event="stream_ended",
+		message={"stream": stream.name}
+	)
+
+	return {"status": "Ended"}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_stream_info(stream_name):
+	"""
+	Get stream information for viewing (students).
+
+	Args:
+		stream_name: LMS Broadcast Stream name
+
+	Returns:
+		dict: Stream details including playback URL
+	"""
+	stream = frappe.get_doc("LMS Broadcast Stream", stream_name)
+
+	# Check if user can view
+	if stream.batch_name:
+		is_enrolled = frappe.db.exists(
+			"LMS Batch Enrollment",
+			{"batch": stream.batch_name, "member": frappe.session.user}
+		)
+		is_host = stream.host == frappe.session.user
+
+		if not is_enrolled and not is_host:
+			frappe.throw(_("You must be enrolled in this batch to view the stream"))
+
+	# Get live viewer count from SRS media server
+	viewer_count = get_srs_viewer_count(stream.stream_key) if stream.status == "Live" else 0
+
+	return {
+		"name": stream.name,
+		"title": stream.title,
+		"status": stream.status,
+		"playback_url": stream.playback_url,
+		"host": stream.host,
+		"viewer_count": viewer_count,
+		"stream_source": stream.stream_source
+	}
+
+
+def get_srs_viewer_count(stream_key):
+	"""
+	Get viewer count from SRS API.
+	SRS tracks all client connections.
+	"""
+	import requests
+
+	# Use Docker service name for backend API calls (inside Docker network)
+	# The LMS Settings media_server_host is for frontend URLs (browser access)
+	media_server = "media-server"  # Docker service name
+	srs_api_port = 1985
+
+	try:
+		# SRS API endpoint for streams
+		url = f"http://{media_server}:{srs_api_port}/api/v1/streams/"
+		response = requests.get(url, timeout=2)
+
+		if response.status_code == 200:
+			data = response.json()
+			# Find the stream by name and count clients
+			if data.get("code") == 0 and "streams" in data:
+				for stream in data["streams"]:
+					# Stream name format in SRS
+					if stream.get("name") == stream_key or stream.get("name") == f"/{stream_key}":
+						# clients includes publisher, so subtract 1 for viewer count
+						clients = stream.get("clients", 0)
+						return max(0, clients - 1)  # Exclude publisher
+			return 0
+		return 0
+	except Exception as e:
+		frappe.logger().debug(f"SRS API error: {e}")
+		return 0
+
+
+@frappe.whitelist()
+def get_viewer_count(stream_name):
+	"""Get viewer count from SRS media server."""
+	stream = frappe.get_doc("LMS Broadcast Stream", stream_name)
+	count = get_srs_viewer_count(stream.stream_key)
+	return {"viewer_count": count}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_live_streams(batch_name=None, course=None):
+	"""Get all currently live streams that the user has access to."""
+	filters = {"status": "Live"}
+	if batch_name:
+		filters["batch_name"] = batch_name
+	if course:
+		filters["course"] = course
+
+	streams = frappe.get_all(
+		"LMS Broadcast Stream",
+		filters=filters,
+		fields=["name", "title", "host", "playback_url", "viewer_count", "batch_name", "course", "stream_source", "stream_key", "thumbnail"]
+	)
+
+	# Get live viewer counts from SRS
+	for stream in streams:
+		if stream.get("stream_key"):
+			stream["viewer_count"] = get_srs_viewer_count(stream["stream_key"])
+		stream.pop("stream_key", None)
+
+	# Filter streams based on user enrollment
+	return filter_streams_by_enrollment(streams)
+
+
+@frappe.whitelist(allow_guest=True)
+def get_all_streams(batch_name=None, course=None):
+	"""Get all streams that the user has access to (for listing page)."""
+	filters = {}
+	if batch_name:
+		filters["batch_name"] = batch_name
+	if course:
+		filters["course"] = course
+
+	streams = frappe.get_all(
+		"LMS Broadcast Stream",
+		filters=filters,
+		fields=["name", "title", "host", "status", "scheduled_date", "scheduled_time", "viewer_count", "batch_name", "course", "stream_source", "stream_key", "thumbnail"],
+		order_by="scheduled_date desc, scheduled_time desc"
+	)
+
+	# Get live viewer counts from SRS for live streams
+	for stream in streams:
+		if stream.get("status") == "Live" and stream.get("stream_key"):
+			stream["viewer_count"] = get_srs_viewer_count(stream["stream_key"])
+		# Remove stream_key from response (security)
+		stream.pop("stream_key", None)
+
+	# Filter streams based on user enrollment
+	return filter_streams_by_enrollment(streams)
+
+
+def filter_streams_by_enrollment(streams):
+	"""Filter streams based on user enrollment in batch or course."""
+	user = frappe.session.user
+
+	# Guests see no restricted streams
+	if user == "Guest":
+		return [s for s in streams if not s.get("batch_name") and not s.get("course")]
+
+	# System Manager and Moderator see all streams
+	if "System Manager" in frappe.get_roles(user) or "Moderator" in frappe.get_roles(user):
+		return streams
+
+	# Get user's enrolled batches and courses
+	enrolled_batches = frappe.get_all(
+		"LMS Batch Enrollment",
+		filters={"member": user},
+		pluck="batch"
+	)
+	enrolled_courses = frappe.get_all(
+		"LMS Enrollment",
+		filters={"member": user},
+		pluck="course"
+	)
+
+	filtered_streams = []
+	for stream in streams:
+		# Stream has no restriction - visible to all
+		if not stream.get("batch_name") and not stream.get("course"):
+			filtered_streams.append(stream)
+			continue
+
+		# User is the host - always visible
+		if stream.get("host") == user:
+			filtered_streams.append(stream)
+			continue
+
+		# Check batch enrollment
+		if stream.get("batch_name") and stream.get("batch_name") in enrolled_batches:
+			filtered_streams.append(stream)
+			continue
+
+		# Check course enrollment
+		if stream.get("course") and stream.get("course") in enrolled_courses:
+			filtered_streams.append(stream)
+			continue
+
+	return filtered_streams
+
+
+@frappe.whitelist()
+def get_stream_restriction_options():
+	"""Get batches and courses for stream restriction selection."""
+	batches = frappe.get_all(
+		"LMS Batch",
+		fields=["name", "title"],
+		order_by="title asc"
+	)
+	courses = frappe.get_all(
+		"LMS Course",
+		fields=["name", "title"],
+		order_by="title asc"
+	)
+	return {
+		"batches": batches,
+		"courses": courses
+	}
+
+
+@frappe.whitelist()
+def create_stream(title, batch_name=None, course=None, scheduled_date=None, scheduled_time=None, duration=60, thumbnail=None):
+	"""Create a new broadcast stream."""
+	stream = frappe.get_doc({
+		"doctype": "LMS Broadcast Stream",
+		"title": title,
+		"batch_name": batch_name,
+		"course": course,
+		"host": frappe.session.user,
+		"scheduled_date": scheduled_date,
+		"scheduled_time": scheduled_time,
+		"duration": duration,
+		"thumbnail": thumbnail
+	})
+	stream.insert()
+
+	return {
+		"name": stream.name,
+		"stream_key": stream.stream_key,
+		"rtmp_url": stream.rtmp_url,
+		"webrtc_url": stream.webrtc_url,
+		"playback_url": stream.playback_url
+	}
+
+
+# ============================================
+# Callback for OBS/RTMP streams (called by media server)
+# ============================================
+
+@frappe.whitelist(allow_guest=True, methods=["POST", "GET"])
+def stream_auth(name=None, **kwargs):
+	"""Authenticate RTMP stream from OBS. Called by SRS on_publish hook."""
+	from werkzeug.wrappers import Response
+
+	# SRS sends POST with JSON body
+	if frappe.request.method == "POST":
+		data = frappe.request.json or {}
+		stream_key = data.get("stream") or data.get("name") or name
+	else:
+		stream_key = frappe.request.args.get("stream") or frappe.request.args.get("name") or name or kwargs.get("stream")
+
+	if not stream_key:
+		return Response('{"code": 1, "msg": "No stream key"}', status=403, mimetype='application/json')
+
+	stream = frappe.db.get_value(
+		"LMS Broadcast Stream",
+		{"stream_key": stream_key, "status": ["in", ["Scheduled", "Live", "Ended"]]},
+		["name"],
+		as_dict=True
+	)
+
+	if not stream:
+		return Response('{"code": 1, "msg": "Invalid stream key"}', status=403, mimetype='application/json')
+
+	frappe.db.set_value("LMS Broadcast Stream", stream.name, {
+		"status": "Live",
+		"stream_source": "OBS"
+	})
+	frappe.db.commit()
+
+	frappe.publish_realtime(
+		event="stream_started",
+		message={"stream": stream.name, "source": "OBS"}
+	)
+
+	return Response('{"code": 0}', mimetype='application/json')
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST", "GET"])
+def stream_end(name=None, **kwargs):
+	"""Handle stream end from OBS. Called by SRS on_unpublish hook."""
+	from werkzeug.wrappers import Response
+
+	# SRS sends POST with JSON body
+	if frappe.request.method == "POST":
+		data = frappe.request.json or {}
+		stream_key = data.get("stream") or data.get("name") or name
+	else:
+		stream_key = frappe.request.args.get("stream") or frappe.request.args.get("name") or name or kwargs.get("stream")
+
+	if not stream_key:
+		return Response('{"code": 0}', mimetype='application/json')
+
+	stream_name = frappe.db.get_value(
+		"LMS Broadcast Stream",
+		{"stream_key": stream_key},
+		"name"
+	)
+
+	if stream_name:
+		frappe.db.set_value("LMS Broadcast Stream", stream_name, "status", "Ended")
+		frappe.db.commit()
+
+		frappe.publish_realtime(
+			event="stream_ended",
+			message={"stream": stream_name}
+		)
+
+	return Response('{"code": 0}', mimetype='application/json')
+
+
+# ============================================
+# Stream Playback Authentication
+# ============================================
+
+import hashlib
+import time
+import json as json_module
+
+STREAM_AUTH_SECRET = "lms-stream-auth-secret"  # Should match Server.xml SecretKey
+TOKEN_VALIDITY_HOURS = 3600  # 3600 hours = 150 days
+
+
+def generate_playback_token(user, stream_key, hours_valid=TOKEN_VALIDITY_HOURS):
+	"""
+	Generate a signed token for stream playback.
+
+	Args:
+		user: Username/email
+		stream_key: The stream key
+		hours_valid: Token validity in hours
+
+	Returns:
+		str: Base64-encoded signed token
+	"""
+	import base64
+
+	expires = int(time.time()) + (hours_valid * 3600)
+	payload = {
+		"u": user,
+		"s": stream_key,
+		"e": expires
+	}
+	payload_json = json_module.dumps(payload, separators=(',', ':'))
+
+	# Create signature
+	signature = hashlib.sha256(
+		f"{payload_json}{STREAM_AUTH_SECRET}".encode()
+	).hexdigest()[:16]
+
+	# Encode token
+	token_data = f"{payload_json}|{signature}"
+	token = base64.urlsafe_b64encode(token_data.encode()).decode()
+
+	return token
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST", "GET"])
+def srs_auth_play():
+	"""
+	SRS HTTP callback to verify playback token.
+	Called by SRS on_play hook before allowing stream access.
+	Returns {"code": 0} for valid token, {"code": 1} for invalid.
+	"""
+	from werkzeug.wrappers import Response
+	import base64
+
+	# Get params from SRS callback (POST JSON or GET query params)
+	if frappe.request.method == "POST":
+		data = frappe.request.json or {}
+		# Token is in the 'param' field from SRS (query string from URL)
+		param = data.get("param", "")
+		stream_key = data.get("stream", "")
+	else:
+		param = frappe.request.args.get("param", "")
+		stream_key = frappe.request.args.get("stream", "")
+
+	# Parse token from param string (format: ?token=xxx or token=xxx)
+	token = None
+	if param:
+		for part in param.lstrip("?").split("&"):
+			if part.startswith("token="):
+				token = part.split("=", 1)[1]
+				break
+
+	if not token:
+		return Response('{"code": 1, "msg": "No token provided"}', mimetype='application/json')
+
+	# Validate token
+	try:
+		token_data = base64.urlsafe_b64decode(token.encode()).decode()
+		payload_json, signature = token_data.rsplit('|', 1)
+		payload = json_module.loads(payload_json)
+
+		# Verify signature
+		expected_sig = hashlib.sha256(
+			f"{payload_json}{STREAM_AUTH_SECRET}".encode()
+		).hexdigest()[:16]
+
+		if signature != expected_sig:
+			return Response('{"code": 1, "msg": "Invalid signature"}', mimetype='application/json')
+
+		# Check expiration
+		if payload.get("e", 0) < time.time():
+			return Response('{"code": 1, "msg": "Token expired"}', mimetype='application/json')
+
+		# Check stream key matches
+		if payload.get("s") != stream_key:
+			return Response('{"code": 1, "msg": "Stream mismatch"}', mimetype='application/json')
+
+		# Token is valid
+		return Response('{"code": 0}', mimetype='application/json')
+
+	except Exception as e:
+		frappe.logger().error(f"Token validation error: {e}")
+		return Response('{"code": 1, "msg": "Invalid token"}', mimetype='application/json')
+
+
+@frappe.whitelist()
+def get_playback_token(stream_name):
+	"""
+	Get a signed playback token for a stream.
+
+	Args:
+		stream_name: LMS Broadcast Stream name
+
+	Returns:
+		dict: {token, playback_url}
+	"""
+	user = frappe.session.user
+
+	if user == "Guest":
+		frappe.throw(_("Please login to view streams"))
+
+	# Get stream details
+	stream = frappe.get_doc("LMS Broadcast Stream", stream_name)
+
+	# Check if user can access
+	is_host = stream.host == user
+	is_admin = "System Manager" in frappe.get_roles(user) or "Moderator" in frappe.get_roles(user)
+
+	if not is_host and not is_admin:
+		# Check batch enrollment
+		if stream.batch_name:
+			is_enrolled = frappe.db.exists(
+				"LMS Batch Enrollment",
+				{"batch": stream.batch_name, "member": user}
+			)
+			if not is_enrolled:
+				frappe.throw(_("You must be enrolled in this batch to view the stream"))
+
+		# Check course enrollment
+		if stream.course:
+			is_enrolled = frappe.db.exists(
+				"LMS Enrollment",
+				{"course": stream.course, "member": user}
+			)
+			if not is_enrolled:
+				frappe.throw(_("You must be enrolled in this course to view the stream"))
+
+	# Generate token
+	token = generate_playback_token(user, stream.stream_key)
+
+	# Build authenticated playback URL
+	base_url = stream.playback_url
+	if "?" in base_url:
+		auth_url = f"{base_url}&token={token}"
+	else:
+		auth_url = f"{base_url}?token={token}"
+
+	return {
+		"token": token,
+		"playback_url": auth_url
+	}
+
+
+# ============================================
+# Stream Comments API
+# ============================================
+
+@frappe.whitelist()
+def get_stream_comments(stream_name, limit=100):
+	"""Get comments for a stream."""
+	comments = frappe.get_all(
+		"LMS Stream Comment",
+		filters={"stream": stream_name},
+		fields=["name", "user", "user_name", "message", "creation"],
+		order_by="creation asc",
+		limit_page_length=limit
+	)
+	return comments
+
+
+@frappe.whitelist()
+def post_stream_comment(stream_name, message):
+	"""Post a comment to a stream."""
+	user = frappe.session.user
+
+	if user == "Guest":
+		frappe.throw(_("Please login to comment"))
+
+	if not message or not message.strip():
+		frappe.throw(_("Message cannot be empty"))
+
+	# Limit message length
+	if len(message) > 500:
+		frappe.throw(_("Message too long (max 500 characters)"))
+
+	# Get user's full name
+	user_name = frappe.db.get_value("User", user, "full_name") or user
+
+	comment = frappe.get_doc({
+		"doctype": "LMS Stream Comment",
+		"stream": stream_name,
+		"user": user,
+		"user_name": user_name,
+		"message": message.strip()
+	})
+	comment.insert(ignore_permissions=True)
+
+	return {
+		"name": comment.name,
+		"user": comment.user,
+		"user_name": comment.user_name,
+		"message": comment.message,
+		"creation": comment.creation
+	}

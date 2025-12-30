@@ -1,0 +1,172 @@
+{
+    "name": "LMS Broadcast Stream",
+    "module": "LMS",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "naming_rule": "Expression",
+    "autoname": "format:STREAM-{####}",
+    "creation": "2024-01-01 00:00:00.000000",
+    "modified": "2024-01-01 00:00:00.000000",
+    "modified_by": "Administrator",
+    "owner": "Administrator",
+    "field_order": [
+        "title",
+        "thumbnail",
+        "restrict_to_section",
+        "batch_name",
+        "course",
+        "host",
+        "column_break_1",
+        "scheduled_date",
+        "scheduled_time",
+        "duration",
+        "stream_section",
+        "stream_key",
+        "status",
+        "stream_source",
+        "column_break_2",
+        "rtmp_url",
+        "webrtc_url",
+        "playback_url",
+        "viewer_count"
+    ],
+    "fields": [
+        {
+            "fieldname": "title",
+            "fieldtype": "Data",
+            "label": "Title",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "thumbnail",
+            "fieldtype": "Attach Image",
+            "label": "Thumbnail"
+        },
+        {
+            "fieldname": "restrict_to_section",
+            "fieldtype": "Section Break",
+            "label": "Access Restriction",
+            "description": "Optionally restrict this stream to enrolled students of a batch or course"
+        },
+        {
+            "fieldname": "batch_name",
+            "fieldtype": "Link",
+            "label": "Restrict to Batch",
+            "options": "LMS Batch",
+            "description": "Only students enrolled in this batch can view the stream"
+        },
+        {
+            "fieldname": "course",
+            "fieldtype": "Link",
+            "label": "Restrict to Course",
+            "options": "LMS Course",
+            "description": "Only students enrolled in this course can view the stream"
+        },
+        {
+            "fieldname": "host",
+            "fieldtype": "Link",
+            "label": "Host (Teacher)",
+            "options": "User",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "scheduled_date",
+            "fieldtype": "Date",
+            "label": "Scheduled Date"
+        },
+        {
+            "fieldname": "scheduled_time",
+            "fieldtype": "Time",
+            "label": "Scheduled Time"
+        },
+        {
+            "fieldname": "duration",
+            "fieldtype": "Int",
+            "label": "Duration (minutes)",
+            "default": "60"
+        },
+        {
+            "fieldname": "stream_section",
+            "fieldtype": "Section Break",
+            "label": "Stream Configuration"
+        },
+        {
+            "fieldname": "stream_key",
+            "fieldtype": "Data",
+            "label": "Stream Key",
+            "read_only": 1
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Scheduled\nLive\nEnded",
+            "default": "Scheduled",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "stream_source",
+            "fieldtype": "Select",
+            "label": "Stream Source",
+            "options": "\nOBS\nBrowser",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "rtmp_url",
+            "fieldtype": "Data",
+            "label": "RTMP URL",
+            "read_only": 1
+        },
+        {
+            "fieldname": "webrtc_url",
+            "fieldtype": "Data",
+            "label": "WebRTC URL",
+            "read_only": 1
+        },
+        {
+            "fieldname": "playback_url",
+            "fieldtype": "Data",
+            "label": "Playback URL (HLS)",
+            "read_only": 1
+        },
+        {
+            "fieldname": "viewer_count",
+            "fieldtype": "Int",
+            "label": "Current Viewers",
+            "read_only": 1,
+            "default": "0"
+        }
+    ],
+    "permissions": [
+        {
+            "role": "System Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        },
+        {
+            "role": "Moderator",
+            "read": 1,
+            "write": 1,
+            "create": 1
+        },
+        {
+            "role": "LMS Student",
+            "read": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "track_changes": 1
+}

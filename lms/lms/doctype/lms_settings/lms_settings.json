@@ -25,6 +25,14 @@
   "show_live_class",
   "show_discussions",
   "show_emails",
+  "streaming_tab",
+  "streaming_section",
+  "media_server_host",
+  "rtmp_port",
+  "column_break_streaming",
+  "webrtc_port",
+  "hls_port",
+  "use_ssl",
   "signup_settings_tab",
   "signup_settings_section",
   "column_break_9",
@@ -416,6 +424,53 @@
    "fieldname": "programming_exercises",
    "fieldtype": "Check",
    "label": "Programming Exercises"
+  },
+  {
+   "fieldname": "streaming_tab",
+   "fieldtype": "Tab Break",
+   "label": "Streaming"
+  },
+  {
+   "fieldname": "streaming_section",
+   "fieldtype": "Section Break",
+   "label": "Streaming Configuration",
+   "description": "Configure SRS media server settings for live streaming"
+  },
+  {
+   "default": "localhost",
+   "fieldname": "media_server_host",
+   "fieldtype": "Data",
+   "label": "Media Server Host",
+   "description": "Hostname or IP of SRS media server"
+  },
+  {
+   "default": "1935",
+   "fieldname": "rtmp_port",
+   "fieldtype": "Data",
+   "label": "RTMP Port"
+  },
+  {
+   "fieldname": "column_break_streaming",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1985",
+   "fieldname": "webrtc_port",
+   "fieldtype": "Data",
+   "label": "WebRTC Port (WHIP)",
+   "description": "SRS HTTP API port for WebRTC WHIP publishing"
+  },
+  {
+   "default": "8080",
+   "fieldname": "hls_port",
+   "fieldtype": "Data",
+   "label": "HLS Port"
+  },
+  {
+   "default": "0",
+   "fieldname": "use_ssl",
+   "fieldtype": "Check",
+   "label": "Use SSL (wss/https)"
   }
  ],
  "grid_page_length": 50,
