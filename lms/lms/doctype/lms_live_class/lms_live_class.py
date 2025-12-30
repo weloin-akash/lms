@@ -10,7 +10,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, format_date, format_time, get_datetime, nowdate
 
-from lms.lms.doctype.lms_batch.lms_batch import authenticate
+from lms.lms.doctype.lms_meeting_provider_settings.zoom_api import get_valid_access_token
 
 
 class LMSLiveClass(Document):
@@ -111,8 +111,10 @@ def update_attendance():
 		{
 			"uuid": ["is", "set"],
 			"attendees": ["is", "not set"],
+			"meeting_provider": ["is", "set"],
+			"provider_type": "Zoom",
 		},
-		["name", "uuid", "zoom_account"],
+		["name", "uuid", "meeting_provider"],
 	)
 
 	for live_class in past_live_classes:
@@ -123,7 +125,7 @@ def update_attendance():
 
 def get_attendance(live_class):
 	headers = {
-		"Authorization": "Bearer " + authenticate(live_class.zoom_account),
+		"Authorization": "Bearer " + get_valid_access_token(live_class.meeting_provider),
 		"content-type": "application/json",
 	}
 
