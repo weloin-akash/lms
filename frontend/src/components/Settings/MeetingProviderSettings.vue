@@ -68,7 +68,7 @@
 								</div>
 								<div v-else-if="column.key == 'provider_type'">
 									<Badge
-										:theme="getProviderBadgeTheme(row[column.key])"
+										:theme="row[column.key] === 'Google Meet' ? 'blue' : 'purple'"
 									>
 										{{ row[column.key] }}
 									</Badge>
@@ -122,14 +122,11 @@ import {
 	ListSelectBanner,
 	toast,
 } from 'frappe-ui'
-import { computed, inject, onMounted, ref, watch } from 'vue'
+import { computed, inject, onMounted, ref } from 'vue'
 import { Plus, Trash2 } from 'lucide-vue-next'
 import { cleanError } from '@/utils'
 import { User } from '@/components/Settings/types'
 import MeetingProviderModal from '@/components/Modals/MeetingProviderModal.vue'
-
-// Accept show model from parent (Settings.vue)
-const show = defineModel('show')
 
 const user = inject<User | null>('$user')
 const showForm = ref(false)
@@ -152,7 +149,6 @@ const meetingProviders = createListResource({
 		'member_image',
 		'client_id',
 		'client_secret',
-		'account_id',
 		'refresh_token',
 	],
 	cache: ['meetingProviders'],
@@ -180,13 +176,6 @@ const openForm = (accountID: string) => {
 	showForm.value = true
 }
 
-// Reset currentAccount when modal closes so the watch triggers on reopen
-watch(showForm, (val) => {
-	if (!val) {
-		currentAccount.value = 'new'
-	}
-})
-
 const removeAccount = (selections, unselectAll) => {
 	call('lms.lms.api.delete_documents', {
 		doctype: 'LMS Meeting Provider Settings',
@@ -202,19 +191,6 @@ const removeAccount = (selections, unselectAll) => {
 				cleanError(err.messages[0]) || __('Error deleting meeting providers')
 			)
 		})
-}
-
-const getProviderBadgeTheme = (providerType: string) => {
-	switch (providerType) {
-		case 'Google Meet':
-			return 'blue'
-		case 'Zoom':
-			return 'orange'
-		case 'Microsoft Teams':
-			return 'green'
-		default:
-			return 'gray'
-	}
 }
 
 const columns = computed(() => {

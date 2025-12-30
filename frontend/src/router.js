@@ -67,6 +67,17 @@ const routes = [
 		props: true,
 	},
 	{
+		path: '/subscription',
+		name: 'Subscription',
+		component: () => import('@/pages/Subscription.vue'),
+	},
+	{
+		path: '/subscription/:subscriptionName/edit',
+		name: 'SubscriptionForm',
+		component: () => import('@/pages/SubscriptionForm.vue'),
+		props: true
+	},
+	{
 		path: '/billing/:type/:name',
 		name: 'Billing',
 		component: () => import('@/pages/Billing.vue'),
@@ -109,6 +120,18 @@ const routes = [
 				path: 'schedule',
 				component: () =>
 					import('@/pages/ProfileEvaluationSchedule.vue'),
+			},
+			{
+				name: 'ProfileReview',
+				path: 'reviews',
+				component: () =>
+					import('@/pages/ProfileReview.vue'),
+			},
+			{
+				name: 'ProfileCourse',
+				path: 'course',
+				component: () =>
+					import('@/pages/ProfileCourse.vue'),
 			},
 		],
 	},

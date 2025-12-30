@@ -24,11 +24,12 @@ from frappe.utils import (
 	format_date,
 	get_datetime,
 	now,
+	random_string
 )
 
 from lms.lms.doctype.course_lesson.course_lesson import save_progress
 from lms.lms.utils import get_average_rating, get_lesson_count
-
+from payments.utils import get_payment_gateway_controller
 
 @frappe.whitelist()
 def autosave_section(section, code):
@@ -2366,3 +2367,254 @@ def post_stream_comment(stream_name, message):
 		"message": comment.message,
 		"creation": comment.creation
 	}
+@frappe.whitelist()
+def google_meet_get_auth_url(settings_name, redirect_uri=None):
+	"""
+	Get Google OAuth authorization URL for Google Meet integration
+
+	Args:
+		settings_name: Name of the LMS Meeting Provider Settings document
+		redirect_uri: Optional custom redirect URI. If not provided, uses default.
+
+	Returns:
+		dict: Contains authorization_url to redirect user to
+	"""
+	from lms.lms.doctype.lms_meeting_provider_settings.oauth import get_oauth_provider
+
+	if not redirect_uri:
+		# Default redirect URI - frontend route
+		redirect_uri = "http://localhost:8000/lms/google/auth"
+
+	oauth_provider = get_oauth_provider(settings_name)
+	auth_url = oauth_provider.get_authorization_url(redirect_uri)
+
+	return {
+		"authorization_url": auth_url,
+		"redirect_uri": redirect_uri,
+	}
+
+
+@frappe.whitelist(allow_guest=True)
+def google_meet_oauth_callback(code=None, state=None, error=None, error_description=None):
+	"""
+	Handle Google OAuth callback after user authorization
+
+	This endpoint receives the authorization code from Google and exchanges it
+	for access and refresh tokens.
+
+	Args:
+		code: Authorization code from Google
+		state: State token for verification
+		error: Error code if authorization failed
+		error_description: Error description if authorization failed
+
+	Returns:
+		dict: Success or error response (consumed by frontend)
+	"""
+	from lms.lms.doctype.lms_meeting_provider_settings.oauth_google import GoogleOAuthProvider
+
+	# Handle error response from Google
+	if error:
+		error_msg = error_description or error
+		frappe.log_error(
+			title="Google Meet OAuth Error",
+			message=f"Error: {error}, Description: {error_description}"
+		)
+		frappe.throw(_("Google Meet authorization failed: {0}").format(error_msg))
+
+	if not code or not state:
+		frappe.throw(_("Missing authorization code or state parameter."))
+
+	# Get settings from cached state
+	cached_state = frappe.cache().get_value(f"google_oauth_state:{state}")
+	if not cached_state:
+		frappe.throw(_("Invalid or expired state token."))
+
+	settings_name = cached_state.get("settings_name")
+	settings = frappe.get_doc("LMS Meeting Provider Settings", settings_name)
+	oauth_provider = GoogleOAuthProvider(settings)
+
+	# Get redirect URI (must match what was used in authorization request)
+	redirect_uri = "http://localhost:8000/lms/google/auth"
+
+	result = oauth_provider.exchange_code_for_tokens(code, redirect_uri, state)
+
+	return {
+		"success": True,
+		"message": _("Google Meet has been successfully connected!"),
+	}
+
+
+@frappe.whitelist()
+def google_meet_check_authorization(settings_name):
+	"""
+	Check if a Google Meet provider settings has valid authorization
+
+	Args:
+		settings_name: Name of the LMS Meeting Provider Settings document
+
+	Returns:
+		dict: Contains is_authorized boolean and message
+	"""
+	from lms.lms.doctype.lms_meeting_provider_settings.oauth import get_oauth_provider
+
+	try:
+		oauth_provider = get_oauth_provider(settings_name)
+		is_authorized = oauth_provider.is_authorized()
+
+		return {
+			"is_authorized": is_authorized,
+			"message": _("Google Meet is authorized and ready to use.") if is_authorized
+				else _("Google Meet requires authorization. Please click 'Authorize' to connect your account."),
+		}
+	except Exception as e:
+		return {
+			"is_authorized": False,
+			"message": _("Error checking authorization: {0}").format(str(e)),
+		}
+
+
+@frappe.whitelist()
+def google_meet_revoke_authorization(settings_name):
+	"""
+	Revoke Google Meet authorization by clearing stored tokens
+
+	Args:
+		settings_name: Name of the LMS Meeting Provider Settings document
+
+	Returns:
+		dict: Success status and message
+	"""
+	from lms.lms.doctype.lms_meeting_provider_settings.oauth import get_oauth_provider
+
+	oauth_provider = get_oauth_provider(settings_name)
+	return oauth_provider.revoke_authorization()
+
+
+#Get Instructror Review
+@frappe.whitelist()
+def get_instructor_review(username):
+	values = {'username': username}
+	review = frappe.db.sql("""
+SELECT u.full_name as reviewer , review.owner as reviewer_email , u.user_image as u_img , review.course , review.review , review.rating , review.creation as create_date , review.modified as updated_date
+						FROM `tabLMS Course Review` review
+						LEFT JOIN `tabUser` u
+						ON review.owner = u.email
+						LEFT JOIN `tabCourse Instructor` i
+						ON review.course = i.parent
+						LEFT JOIN `tabUser` instructor_user
+						ON i.instructor = instructor_user.email
+						WHERE instructor_user.username = %(username)s
+						ORDER BY review.creation DESC
+
+""",values=values, as_dict=1)
+	return review
+
+
+@frappe.whitelist(allow_guest=True)
+def get_all_course():
+	courses = frappe.db.get_list(
+		"LMS Course",
+		fields = ["name"],
+        ignore_permissions=True
+	)
+	return courses
+
+
+@frappe.whitelist()
+def get_instructor_courses(username):
+	"""Fetch Insctructor Cources By Instructor username."""
+	values = {'username': username}
+	courses = frappe.db.sql("""
+						SELECT course.*
+						FROM `tabLMS Course` course
+						LEFT JOIN `tabCourse Instructor` i
+						ON course.name = i.parent
+						LEFT JOIN `tabUser` instructor_user
+						ON i.instructor = instructor_user.email
+						WHERE instructor_user.username = %(username)s
+						ORDER BY course.creation DESC
+""",values=values, as_dict=1)
+	return courses
+
+
+@frappe.whitelist(allow_guest=True)
+def get_all_subscription():
+    """Fetch all subscriptions ignoring permissions."""
+    subscriptions = frappe.db.get_list(
+        "LMS Subscription",
+        fields=["*"],
+        ignore_permissions=True
+    )
+    return subscriptions
+
+
+@frappe.whitelist()
+def create_subscription_order(plan_name, amount, duration):
+    """Create a subscription order with Razorpay payment integration."""
+    try:
+        doc = frappe.new_doc("Subscription Doc")  # IF Subscription Doc NOT WORK THEN USE Conference Participant
+        doc.user = frappe.session.user
+        doc.subscription_plan = plan_name
+        doc.amount = amount
+        doc.duration_type = duration
+        doc.payment_date = now()
+        doc.notes = f"Thank you {frappe.session.user}"
+        doc.receipt = doc.name
+        doc.payment_status = "Unpaid"
+        doc.insert()
+
+        controller = get_payment_gateway_controller("Razorpay")
+        if not controller or not getattr(controller, "api_key", None):
+            frappe.throw("Razorpay payment gateway is not configured. Please contact admin.")
+
+        payment_details = {
+            "amount": int(amount * 100),
+            "currency": "INR",
+            "receipt": doc.name,
+            "payment_capture": 0
+        }
+
+        order = controller.create_order(**payment_details)
+
+        if not order or not order.get("id"):
+            frappe.throw("Failed to create Razorpay order. Please try again later.")
+        doc.payment_getway = "Razorpay"
+        doc.order_id = order["id"]
+        doc.payment_id = random_string(12)
+        doc.payment_status = "Pending"
+        doc.save()
+
+        return {
+            "participant": doc.name,
+            "order_id": order["id"],
+            "amount": payment_details["amount"],
+            "customer_name": frappe.get_value("User", frappe.session.user, "full_name"),
+            "customer_email": frappe.get_value("User", frappe.session.user, "email")
+        }
+
+    except frappe.ValidationError as ve:
+        return {"error": str(ve)}
+    except Exception as e:
+        frappe.log_error(message=str(e), title="Subscription Order Error")
+        return {"error": "Something went wrong while creating subscription order."}
+
+
+@frappe.whitelist()
+def verify_subscription_payment(payment_id, order_id, signature):
+    """Verify Razorpay payment and update participant doc"""
+    try:
+        doc = frappe.get_doc("Conference Participant", {"order_id": order_id})
+        if not doc:
+            frappe.throw("Order not found")
+
+        doc.razorpay_payment_id = payment_id
+        doc.payment_status = "Paid"
+        doc.save()
+        return {"status": "success"}
+
+    except frappe.ValidationError as ve:
+        return {"error": str(ve)}
+    except Exception as e:
+        frappe.log_error(message=str(e), title="Subscription Payment Verification Error")
+        return {"error": "Failed to verify payment."}
