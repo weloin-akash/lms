@@ -46,8 +46,8 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <FormControl v-model="subscription.name1" :label="__('Name')" required />
 
-                <FormControl v-model="subscription.plan_type" type="select" :options="planTypeOptions"
-                  :label="__('Plan Type')" />
+                <FormControl v-model="subscription.duration_type" type="select" :options="durationTypeOptions"
+                  :label="__('Duration Type')" />
               </div>
 
               <!-- Row 2 -->
@@ -61,8 +61,8 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <FormControl v-model="subscription.features" type="textarea" rows="3" :label="__('Features')" />
 
-                <FormControl v-model="subscription.duration_type" type="select" :options="durationTypeOptions"
-                  :label="__('Duration Type')" />
+                <!-- <FormControl v-model="subscription.duration_type" type="select" :options="durationTypeOptions"
+                  :label="__('Duration Type')" /> -->
               </div>
 
               <!-- Row 4 -->
@@ -83,62 +83,7 @@
 
       <!-- RIGHT SIDEBAR -->
       <div class="w-full h-full lg:border-l bg-gray-50">
-        <div class="p-4 md:p-6 space-y-6">
-
-          <!-- USER CARD -->
-          <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-            <div class="flex items-center space-x-4">
-              <div
-                class="w-12 h-12 rounded-full bg-[#ed8e22] flex items-center justify-center text-white font-bold text-lg">
-                S
-              </div>
-              <div>
-                <h3 class="text-lg font-semibold">{{ userInfo?.full_name }}</h3>
-                <p class="text-sm text-gray-500">{{ userInfo?.email }}</p>
-              </div>
-            </div>
-
-            <div class="mt-4">
-              <p class="text-sm text-gray-500">User Type</p>
-              <p class="font-medium text-gray-900">{{ userInfo?.user_type }}</p>
-            </div>
-          </div>
-
-          <!-- WALLET CARD -->
-          <div class="bg-gradient-to-br from-orange-50 to-white border border-orange-200 rounded-xl shadow-sm p-6">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-lg font-bold text-gray-900">Wallet</h3>
-              <span class="px-3 py-1 text-xs bg-orange-100 text-orange-600 rounded-full font-medium">Active</span>
-            </div>
-
-            <div class="text-3xl font-bold text-gray-900 mb-2">₹ 1,250</div>
-            <p class="text-sm text-gray-500 mb-4">Available Balance</p>
-
-            <button
-              class="w-full bg-[#ed8e22] hover:bg-[#d47a1a] text-white font-medium px-4 py-2.5 rounded-lg transition-all shadow-sm hover:shadow">
-              Add Money
-            </button>
-          </div>
-
-          <!-- SUMMARY CARD -->
-          <div class="bg-white shadow-sm border border-gray-200 rounded-xl p-6 space-y-4">
-            <h3 class="text-lg font-semibold text-gray-900">Quick Summary</h3>
-
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-600">Total Subscriptions:</span>
-              <span class="font-medium text-gray-900">0</span>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-600">Active Plans:</span>
-              <span class="font-medium text-gray-900">0</span>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-600">Pending Renewals:</span>
-              <span class="font-medium text-gray-900">0</span>
-            </div>
-          </div>
-
-        </div>
+        
       </div>
 
     </div>
