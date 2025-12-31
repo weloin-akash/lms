@@ -51,10 +51,10 @@
 
                 <div class="mb-4">
                     <span v-if="plan.oldPrice" class="text-sm line-through text-gray-600 mr-2">
-                        ₹{{ plan.oldPrice }}
+                        ₹{{ plan.price }}
                     </span>
                     <span class="text-3xl font-bold text-ink-gray-9">
-                        ₹{{ plan.price }}
+                        ₹{{ plan.oldPrice ?? plan.price}}
                         <span class="text-sm font-medium text-gray-500">/ {{ billingCycle }}</span>
                     </span>
                 </div>

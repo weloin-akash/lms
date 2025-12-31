@@ -1,4 +1,25 @@
 <template>
+      <AppHeader :title="__('Live Streams')" :description="__('Create Your Live Streams')">
+        <template #icon>
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+        </template>
+
+        <!-- <template #actions>
+            <router-link v-if="canCreateSubscription()"
+                :to="{ name: 'SubscriptionForm', params: { subscriptionName: 'new' } }">
+                <Button
+                    class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-lg px-4 py-2 rounded-lg font-medium border-0">
+                    <template #prefix>
+                        <Plus class="h-4 w-4 stroke-1.5" />
+                    </template>
+                    {{ __('Create') }}
+                </Button>
+            </router-link>
+        </template> -->
+    </AppHeader>
   <div class="streams-page container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold">Live Streams</h1>

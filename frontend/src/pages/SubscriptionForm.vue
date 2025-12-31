@@ -1,21 +1,30 @@
 <template>
-  <div class="min-h-screen flex flex-col">
-    <!-- Main grid responsive -->
-    <div class="grid grid-cols-1 lg:grid-cols-[65%,35%] gap-6 h-full">
+  <div class="min-h-screen bg-gray-100 flex flex-col">
+    <div class="grid grid-cols-1 lg:grid-cols-[68%,32%] gap-6 px-4 lg:px-6 py-6">
 
       <!-- LEFT SECTION -->
-      <div class="w-full">
-        <AppHeader :title="__('Subscription Create')" :description="__('Create a plan that fits your needs')">
+      <div class="w-full space-y-6">
+
+        <AppHeader
+          :title="__('Subscription Create')"
+          :description="__('Create a plan that fits your needs')"
+        >
           <template #icon>
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
+            <div class="w-9 h-9 rounded-lg bg-orange-500 flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13"
+                />
+              </svg>
+            </div>
           </template>
 
           <template #actions>
-            <Button variant="solid" @click="submitSubscription"
-              class="ml-2 !bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-2.5 rounded-lg font-medium">
+            <Button
+              variant="solid"
+              @click="submitSubscription"
+              class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-md hover:shadow-lg transition px-6 py-2.5 rounded-lg font-medium"
+            >
               <template #prefix>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -26,69 +35,99 @@
           </template>
         </AppHeader>
 
-        <!-- MAIN FORM AREA -->
-        <div class="w-full px-4 md:px-6 lg:px-8 py-6 bg-gray-50/40">
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+        <!-- FORM CARD -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
 
-            <!-- Header -->
-            <div class="flex items-center space-x-3 mb-6">
-              <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                <svg class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h2 class="text-xl font-bold text-gray-900">Subscription Details</h2>
+          <!-- Section Title -->
+          <div class="flex items-center gap-3 mb-8">
+            <div class="w-9 h-9 bg-orange-100 rounded-xl flex items-center justify-center">
+              <svg class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-900">
+              Subscription Details
+            </h2>
+          </div>
+
+          <!-- FORM -->
+          <div class="space-y-7">
+
+            <!-- Row 1 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormControl v-model="subscription.name1" :label="__('Name')" required />
+              <FormControl
+                v-model="subscription.duration_type"
+                type="select"
+                :options="durationTypeOptions"
+                :label="__('Duration Type')"
+              />
             </div>
 
-            <div class="space-y-6">
-              <!-- Row 1 -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <FormControl v-model="subscription.name1" :label="__('Name')" required />
+            <!-- Row 2 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormControl
+                v-model="subscription.amount"
+                type="number"
+                :label="__('Amount')"
+              />
+              <FormControl
+                v-model="subscription.description"
+                type="textarea"
+                rows="3"
+                :label="__('Description')"
+              />
+            </div>
 
-                <FormControl v-model="subscription.duration_type" type="select" :options="durationTypeOptions"
-                  :label="__('Duration Type')" />
-              </div>
+            <!-- Row 3 -->
+            <div>
+              <FormControl
+                v-model="subscription.features"
+                type="textarea"
+                rows="3"
+                :label="__('Features')"
+              />
+            </div>
 
-              <!-- Row 2 -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <FormControl v-model="subscription.amount" type="number" :label="__('Amount')" />
+            <!-- Divider -->
+            <div class="border-t border-gray-200 pt-6"></div>
 
-                <FormControl v-model="subscription.description" type="textarea" :label="__('Description')" rows="3" />
-              </div>
+            <!-- Row 4 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
 
-              <!-- Row 3 -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <FormControl v-model="subscription.features" type="textarea" rows="3" :label="__('Features')" />
+              <FormControl
+                type="checkbox"
+                v-model="subscription.active"
+                :label="__('Active')"
+              />
 
-                <!-- <FormControl v-model="subscription.duration_type" type="select" :options="durationTypeOptions"
-                  :label="__('Duration Type')" /> -->
-              </div>
+              <FormControl
+                type="checkbox"
+                v-model="subscription.is_discount"
+                :label="__('Discount Available')"
+              />
 
-              <!-- Row 4 -->
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <FormControl type="checkbox" v-model="subscription.active" :label="__('Active')" />
-
-                <FormControl type="checkbox" v-model="subscription.is_discount" :label="__('Discount Available')" />
-
+              <transition name="fade">
                 <div v-if="subscription.is_discount">
-                  <FormControl v-model="subscription.discount_percentage" type="number" :label="__('Discount (%)')"
-                    placeholder="0–100" />
+                  <FormControl
+                    v-model="subscription.discount_percentage"
+                    type="number"
+                    :label="__('Discount (%)')"
+                    placeholder="0 – 100"
+                  />
                 </div>
-              </div>
+              </transition>
+
             </div>
+
           </div>
         </div>
       </div>
-
-      <!-- RIGHT SIDEBAR -->
-      <div class="w-full h-full lg:border-l bg-gray-50">
-        
-      </div>
-
     </div>
   </div>
 </template>
+
 
 <script setup>
 import {
