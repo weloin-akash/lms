@@ -3,11 +3,12 @@
 import frappe
 
 from .oauth_google import GoogleOAuthProvider
+from .oauth_microsoft import MicrosoftOAuthProvider
 
 # Registry of OAuth providers by provider type
 OAUTH_PROVIDERS = {
 	"Google Meet": GoogleOAuthProvider,
-	# "Microsoft Teams": MicrosoftOAuthProvider,  # Future implementation
+	"Microsoft Teams": MicrosoftOAuthProvider,
 }
 
 

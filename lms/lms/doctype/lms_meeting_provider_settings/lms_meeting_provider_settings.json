@@ -17,6 +17,7 @@
   "client_id",
   "client_secret",
   "account_id",
+  "tenant_id",
   "refresh_token",
   "section_break_token",
   "access_token",
@@ -88,7 +89,15 @@
    "mandatory_depends_on": "eval:doc.provider_type=='Zoom'"
   },
   {
-   "depends_on": "eval:doc.provider_type=='Google Meet'",
+   "default": "common",
+   "depends_on": "eval:doc.provider_type=='Microsoft Teams'",
+   "description": "Azure AD Tenant ID (use 'common' for multi-tenant apps)",
+   "fieldname": "tenant_id",
+   "fieldtype": "Data",
+   "label": "Tenant ID"
+  },
+  {
+   "depends_on": "eval:doc.provider_type=='Google Meet' || doc.provider_type=='Microsoft Teams'",
    "fieldname": "refresh_token",
    "fieldtype": "Password",
    "label": "Refresh Token"

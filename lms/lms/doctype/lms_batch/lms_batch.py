@@ -337,8 +337,39 @@ def create_meeting_provider_class(
 		return class_doc		
 
 	elif provider_settings.provider_type == "Microsoft Teams":
-		# Future implementation for Microsoft Teams
-		frappe.throw(_("Microsoft Teams integration is not yet implemented."))
+		from lms.lms.doctype.lms_meeting_provider_settings.teams_api import schedule_meeting as teams_schedule_meeting
+
+		meeting_result = teams_schedule_meeting(
+			settings_name=meeting_provider,
+			title=title,
+			start_time=start_time_iso,
+			end_time=end_time_iso,
+			description=description,
+		)
+
+		if not meeting_result.get("success"):
+			frappe.throw(_("Failed to create Microsoft Teams meeting."))
+
+		# Create the LMS Live Class document
+		class_doc = frappe.get_doc({
+			"doctype": "LMS Live Class",
+			"title": title,
+			"description": description,
+			"date": date,
+			"time": time,
+			"duration": duration,
+			"timezone": timezone,
+			"batch_name": batch_name,
+			"host": frappe.session.user,
+			"join_url": meeting_result.get("join_url"),
+			"start_url": meeting_result.get("join_url"),
+			"meeting_id": meeting_result.get("meeting_id"),
+			"meeting_provider": meeting_provider,
+			"provider_type": "Microsoft Teams",
+		})
+		class_doc.insert()
+
+		return class_doc
 
 	else:
 		frappe.throw(_("Unsupported meeting provider type: {0}").format(provider_settings.provider_type))
