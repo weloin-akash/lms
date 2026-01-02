@@ -1,8 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-100 flex flex-col">
-    <div class="grid grid-cols-1 lg:grid-cols-[68%,32%] gap-6 px-4 lg:px-6 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-[100%,32%] gap-6 px-4 lg:px-6 py-6">
 
-      <!-- LEFT SECTION -->
       <div class="w-full space-y-6">
 
         <AppHeader
@@ -12,10 +11,8 @@
           <template #icon>
             <div class="w-9 h-9 rounded-lg bg-orange-500 flex items-center justify-center">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13"
-                />
-              </svg>
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+						</svg>
             </div>
           </template>
 
@@ -23,111 +20,100 @@
             <Button
               variant="solid"
               @click="submitSubscription"
-              class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-md hover:shadow-lg transition px-6 py-2.5 rounded-lg font-medium"
+              class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white px-6 py-2.5 rounded-lg"
             >
-              <template #prefix>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-              </template>
-              {{ __('Save') }}
+              Save
             </Button>
           </template>
         </AppHeader>
 
-        <!-- FORM CARD -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
 
-          <!-- Section Title -->
-          <div class="flex items-center gap-3 mb-8">
-            <div class="w-9 h-9 bg-orange-100 rounded-xl flex items-center justify-center">
-              <svg class="w-4 h-4 text-[#ed8e22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h2 class="text-xl font-semibold text-gray-900">
-              Subscription Details
-            </h2>
-          </div>
+          <h2 class="text-xl font-semibold mb-6">Subscription Details</h2>
 
-          <!-- FORM -->
-          <div class="space-y-7">
+          <div class="space-y-6">
 
-            <!-- Row 1 -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormControl v-model="subscription.name1" :label="__('Name')" required />
+              <FormControl v-model="subscription.name1" label="Name" required />
               <FormControl
                 v-model="subscription.duration_type"
                 type="select"
                 :options="durationTypeOptions"
-                :label="__('Duration Type')"
+                label="Duration Type"
               />
             </div>
 
-            <!-- Row 2 -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormControl v-model="subscription.amount" type="number" label="Amount" />
+              <FormControl v-model="subscription.description" type="textarea" rows="3" label="Description" />
+            </div>
+
+            <FormControl v-model="subscription.features" type="textarea" rows="3" label="Features" />
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <FormControl type="checkbox" v-model="subscription.active" label="Active" />
+              <FormControl type="checkbox" v-model="subscription.is_discount" label="Discount Available" />
+
               <FormControl
-                v-model="subscription.amount"
+                v-if="subscription.is_discount"
+                v-model="subscription.discount_percentage"
                 type="number"
-                :label="__('Amount')"
+                label="Discount (%)"
               />
-              <FormControl
-                v-model="subscription.description"
-                type="textarea"
-                rows="3"
-                :label="__('Description')"
-              />
-            </div>
-
-            <!-- Row 3 -->
-            <div>
-              <FormControl
-                v-model="subscription.features"
-                type="textarea"
-                rows="3"
-                :label="__('Features')"
-              />
-            </div>
-
-            <!-- Divider -->
-            <div class="border-t border-gray-200 pt-6"></div>
-
-            <!-- Row 4 -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-
-              <FormControl
-                type="checkbox"
-                v-model="subscription.active"
-                :label="__('Active')"
-              />
-
-              <FormControl
-                type="checkbox"
-                v-model="subscription.is_discount"
-                :label="__('Discount Available')"
-              />
-
-              <transition name="fade">
-                <div v-if="subscription.is_discount">
-                  <FormControl
-                    v-model="subscription.discount_percentage"
-                    type="number"
-                    :label="__('Discount (%)')"
-                    placeholder="0 – 100"
-                  />
-                </div>
-              </transition>
-
             </div>
 
           </div>
         </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
+          <h2 class="text-lg font-semibold mb-4">Subscription Access</h2>
+
+          <div class="space-y-4">
+            <div
+              v-for="(item, index) in accessItems"
+              :key="index"
+              class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end"
+            >
+              <FormControl
+                type="select"
+                label="Reference Type"
+                v-model="item.reference_doctype"
+                :options="referenceTypeOptions"
+                @update:modelValue="onReferenceTypeChange(index)"
+                required
+              />
+
+              <FormControl
+                type="select"
+                label="Reference Name"
+                v-model="item.reference_name"
+                :options="item.referenceOptions || []"
+                required
+              />
+
+              <Button
+                v-if="accessItems.length > 1"
+                variant="outline"
+                theme="red"
+                @click="accessItems.splice(index, 1)"
+              >
+                Remove
+              </Button>
+            </div>
+
+            <Button
+              variant="outline"
+              @click="addAccessRow"
+            >
+              + Add Access
+            </Button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 </template>
-
 
 <script setup>
 import {
@@ -135,87 +121,76 @@ import {
   Button,
   createResource,
   toast,
-  usePageMeta
+  usePageMeta,
+  call
 } from 'frappe-ui'
-import { reactive, onMounted, ref, watch } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
-import { getMetaInfo, updateMetaInfo } from '@/utils'
 
 const router = useRouter()
-const userInfo = ref(null)
 
-const props = defineProps({
-  subscriptionName: String,
-  profile: {
-    type: Object,
-    required: true,
-  },
-})
-
-const profile = createResource({
-  url: "frappe.client.get_list",
-  params: {
-    doctype: "User",
-    filters: {
-      username: props.profile?.data?.username,
-    },
-    fields: ["*"],
-    limit: 1
-  },
-  auto: true,
-})
-watch(
-  () => profile.data,
-  (val) => {
-    if (Array.isArray(val) && val.length > 0) {
-      userInfo.value = val[0]
-    }
-  }
-)
-// console.log(profile.data.val.email)
-
-const planTypeOptions = [
-  { label: "Basic", value: "Basic" },
-  { label: "Pro", value: "Pro" }
-]
-
-const durationTypeOptions = [
-  { label: "Monthly", value: "Month" },
-  { label: "Yearly", value: "Year" }
-]
 const subscription = reactive({
   name1: '',
-  plan_type: '',
-  is_discount: false,
   duration_type: '',
   description: '',
   amount: '',
   features: '',
+  is_discount: false,
   discount_percentage: 0,
-  discount: 0,
   active: true,
 })
 
-const meta = reactive({
-  description: '',
-  keywords: '',
-})
+const durationTypeOptions = [
+  { label: 'Monthly', value: 'Month' },
+  { label: 'Yearly', value: 'Year' }
+]
 
-const subscriptionResource = createResource({
-  url: 'frappe.client.get',
-  auto: false,
-  makeParams() {
-    return {
-      doctype: 'LMS Subscription',
-      name: props.subscriptionName
-    }
-  },
-  onSuccess(data) {
-    Object.assign(subscription, data)
-    getMetaInfo('subscriptions', props.subscriptionName, meta)
+const referenceTypeOptions = [
+  { label: 'Course', value: 'LMS Course' },
+  { label: 'Batch', value: 'LMS Batch' },
+  { label: 'Student Group', value: 'LMS Student Group' }
+]
+
+const accessItems = ref([
+  {
+    reference_doctype: '',
+    reference_name: '',
+    referenceOptions: []
   }
-})
+])
+
+const addAccessRow = () => {
+  accessItems.value.push({
+    reference_doctype: '',
+    reference_name: '',
+    referenceOptions: []
+  })
+}
+
+const onReferenceTypeChange = async (index) => {
+  const item = accessItems.value[index]
+  item.reference_name = ''
+  item.referenceOptions = []
+
+  if (!item.reference_doctype) return
+
+  try {
+    const data = await call('frappe.client.get_list', {
+      doctype: item.reference_doctype,
+      fields: ['name'],
+      limit_page_length: 100
+    })
+
+    item.referenceOptions = (data || []).map(d => ({
+      label: d.name,
+      value: d.name
+    }))
+  } catch (err) {
+    toast.error('Failed to load reference names')
+    console.error(err)
+  }
+}
 
 const createSubscriptionResource = createResource({
   url: 'frappe.client.insert',
@@ -229,61 +204,38 @@ const createSubscriptionResource = createResource({
   }
 })
 
-const editSubscriptionResource = createResource({
-  url: 'frappe.client.set_value',
-  auto: false,
-  makeParams() {
-    return {
-      doctype: 'LMS Subscription',
-      name: props.subscriptionName,
-      fieldname: { ...subscription }
-    }
+const saveSubscriptionAccess = async (subscriptionId) => {
+  const validItems = accessItems.value.filter(
+    i => i.reference_doctype && i.reference_name
+  )
+
+  for (const item of validItems) {
+    await call('frappe.client.insert', {
+      doc: {
+        doctype: 'LMS Subscription Access',
+        subscription: subscriptionId,
+        reference_doctype: item.reference_doctype,
+        reference_name: item.reference_name,
+        is_active: 1
+      }
+    })
   }
-})
+}
 
 const submitSubscription = () => {
-  if (props.subscriptionName === 'new') {
-    createSubscription()
-  } else {
-    updateSubscription()
-  }
-}
+  createSubscriptionResource.submit({}, {
+    onSuccess: async (data) => {
+      await saveSubscriptionAccess(data.name)
 
-const createSubscription = () => {
-  createSubscriptionResource.submit(
-    {},
-    {
-      onSuccess: (data) => {
-        updateMetaInfo('subscriptions', data.name, meta)
-        toast.success('Subscription created successfully.')
-        router.push({
-          name: 'SubscriptionForm',
-          params: { subscriptionName: data.name }
-        })
-      },
-      onError: (err) => toast.error(err.messages?.[0] || err)
-    }
-  )
+      toast.success('Subscription created successfully')
+      router.push({
+        name: 'SubscriptionForm',
+        params: { subscriptionName: data.name }
+      })
+    },
+    onError: (err) => toast.error(err.messages?.[0] || err)
+  })
 }
-
-const updateSubscription = () => {
-  editSubscriptionResource.submit(
-    {},
-    {
-      onSuccess: () => {
-        updateMetaInfo('subscriptions', props.subscriptionName, meta)
-        toast.success('Subscription updated successfully.')
-      },
-      onError: (err) => toast.error(err.messages?.[0] || err)
-    }
-  )
-}
-
-onMounted(() => {
-  if (props.subscriptionName !== 'new') {
-    subscriptionResource.reload()
-  }
-})
 
 usePageMeta(() => ({
   title: subscription.name1 || 'New Subscription'
