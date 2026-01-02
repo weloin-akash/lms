@@ -255,7 +255,7 @@ const account = reactive({
 	client_id: '',
 	client_secret: '',
 	account_id: '',
-	tenant_id: 'common',
+	tenant_id: '',
 })
 
 const props = defineProps({
@@ -284,7 +284,7 @@ watch(
 					}
 					// Only set tenant_id for Microsoft Teams
 					if (acc.provider_type === 'Microsoft Teams') {
-						account.tenant_id = acc.tenant_id || 'common'
+						account.tenant_id = acc.tenant_id || ''
 					}
 				}
 			})
@@ -312,7 +312,7 @@ watch(show, async (val) => {
 					account.account_id = acc.account_id || ''
 				}
 				if (acc.provider_type === 'Microsoft Teams') {
-					account.tenant_id = acc.tenant_id || 'common'
+					account.tenant_id = acc.tenant_id || ''
 				}
 			}
 		})
@@ -329,7 +329,7 @@ watch(show, async (val) => {
 		account.client_id = ''
 		account.client_secret = ''
 		account.account_id = ''
-		account.tenant_id = 'common'
+		account.tenant_id = ''
 		isAuthorized.value = false
 	}
 })

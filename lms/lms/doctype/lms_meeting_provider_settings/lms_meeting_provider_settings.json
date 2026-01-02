@@ -89,7 +89,6 @@
    "mandatory_depends_on": "eval:doc.provider_type=='Zoom'"
   },
   {
-   "default": "common",
    "depends_on": "eval:doc.provider_type=='Microsoft Teams'",
    "description": "Azure AD Tenant ID (use 'common' for multi-tenant apps)",
    "fieldname": "tenant_id",
