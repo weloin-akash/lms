@@ -1754,6 +1754,119 @@ def google_meet_revoke_authorization(settings_name):
 
 
 # ============================================
+# Microsoft Teams OAuth APIs
+# ============================================
+
+@frappe.whitelist()
+def microsoft_teams_get_auth_url(settings_name, redirect_uri):
+	"""
+	Get Microsoft Teams OAuth authorization URL
+
+	Args:
+		settings_name: Name of the LMS Meeting Provider Settings document
+		redirect_uri: OAuth callback URL
+
+	Returns:
+		dict: Contains authorization_url
+	"""
+	from lms.lms.doctype.lms_meeting_provider_settings.oauth import get_oauth_provider
+
+	oauth_provider = get_oauth_provider(settings_name)
+	auth_url = oauth_provider.get_authorization_url(redirect_uri)
+
+	return {
+		"authorization_url": auth_url,
+	}
+
+
+@frappe.whitelist(allow_guest=True)
+def microsoft_teams_oauth_callback(code=None, state=None, error=None, error_description=None):
+	"""
+	Handle Microsoft OAuth callback
+
+	Args:
+		code: Authorization code from Microsoft
+		state: State token for verification
+		error: Error code if authorization failed
+		error_description: Error description if authorization failed
+
+	Returns:
+		Redirect response or error page
+	"""
+	from lms.lms.doctype.lms_meeting_provider_settings.oauth import get_oauth_provider
+
+	if error:
+		frappe.throw(_("Microsoft authorization failed: {0}").format(error_description or error))
+
+	if not code or not state:
+		frappe.throw(_("Missing authorization code or state token"))
+
+	# Get the settings name from the cached state
+	cached_state = frappe.cache().get_value(f"microsoft_oauth_state:{state}")
+	if not cached_state:
+		frappe.throw(_("Invalid or expired state token. Please try authorization again."))
+
+	settings_name = cached_state.get("settings_name")
+
+	# Use the redirect URI that matches what was used in the authorization request
+	redirect_uri = frappe.request.host_url.rstrip('/') + "/lms/microsoft/auth"
+
+	oauth_provider = get_oauth_provider(settings_name)
+	result = oauth_provider.exchange_code_for_tokens(code, redirect_uri, state)
+
+	return {
+		"success": True,
+		"message": _("Microsoft Teams has been successfully connected!"),
+	}
+
+
+@frappe.whitelist()
+def microsoft_teams_check_authorization(settings_name):
+	"""
+	Check if a Microsoft Teams provider settings has valid authorization
+
+	Args:
+		settings_name: Name of the LMS Meeting Provider Settings document
+
+	Returns:
+		dict: Contains is_authorized boolean and message
+	"""
+	from lms.lms.doctype.lms_meeting_provider_settings.oauth import get_oauth_provider
+
+	try:
+		oauth_provider = get_oauth_provider(settings_name)
+		is_authorized = oauth_provider.is_authorized()
+
+		return {
+			"is_authorized": is_authorized,
+			"message": _("Microsoft Teams is authorized and ready to use.") if is_authorized
+				else _("Microsoft Teams requires authorization. Please click 'Authorize' to connect your account."),
+		}
+	except Exception as e:
+		return {
+			"is_authorized": False,
+			"message": _("Error checking authorization: {0}").format(str(e)),
+		}
+
+
+@frappe.whitelist()
+def microsoft_teams_revoke_authorization(settings_name):
+	"""
+	Revoke Microsoft Teams authorization by clearing stored tokens
+
+	Args:
+		settings_name: Name of the LMS Meeting Provider Settings document
+
+	Returns:
+		dict: Success status and message
+	"""
+	from lms.lms.doctype.lms_meeting_provider_settings.oauth import get_oauth_provider
+
+	oauth_provider = get_oauth_provider(settings_name)
+	return oauth_provider.revoke_authorization()
+
+
+# ============================================
 # Broadcast Stream APIs
 # ============================================
 

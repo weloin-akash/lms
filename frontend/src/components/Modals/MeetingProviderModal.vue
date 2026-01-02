@@ -68,11 +68,18 @@
 					:required="true"
 					:description="__('Required for Zoom Server-to-Server OAuth')"
 				/>
+				<FormControl
+					v-if="account.provider_type === 'Microsoft Teams'"
+					v-model="account.tenant_id"
+					:label="__('Tenant ID')"
+					type="text"
+					:description="__('Azure AD Tenant ID (use \'common\' for multi-tenant apps)')"
+				/>
 			</div>
 
-			<!-- Authorization Section - Only show for existing Google Meet accounts -->
+			<!-- Authorization Section - Only show for existing Google Meet or Microsoft Teams accounts -->
 			<div
-				v-if="accountID !== 'new' && account.provider_type === 'Google Meet'"
+				v-if="accountID !== 'new' && (account.provider_type === 'Google Meet' || account.provider_type === 'Microsoft Teams')"
 				class="mt-6 p-4 border rounded-lg bg-surface-gray-1"
 			>
 				<div class="flex items-center justify-between">
@@ -164,6 +171,17 @@
 					</span>
 				</div>
 			</div>
+			<div
+				v-if="accountID === 'new' && account.provider_type === 'Microsoft Teams'"
+				class="mt-4 p-3 bg-surface-blue-1 border border-outline-blue-2 rounded-lg text-sm text-ink-blue-3"
+			>
+				<div class="flex items-start space-x-2">
+					<Info class="h-4 w-4 mt-0.5 flex-shrink-0" />
+					<span>
+						{{ __('After saving, you can authorize the provider to enable Microsoft Teams meeting creation. Use "common" for Tenant ID if your app supports multiple tenants.') }}
+					</span>
+				</div>
+			</div>
 		</template>
 	</Dialog>
 </template>
@@ -192,6 +210,7 @@ interface MeetingProvider {
 	client_id: string
 	client_secret: string
 	account_id?: string
+	tenant_id?: string
 	refresh_token?: string
 }
 
@@ -236,6 +255,7 @@ const account = reactive({
 	client_id: '',
 	client_secret: '',
 	account_id: '',
+	tenant_id: 'common',
 })
 
 const props = defineProps({
@@ -262,10 +282,14 @@ watch(
 					if (acc.provider_type === 'Zoom') {
 						account.account_id = acc.account_id || ''
 					}
+					// Only set tenant_id for Microsoft Teams
+					if (acc.provider_type === 'Microsoft Teams') {
+						account.tenant_id = acc.tenant_id || 'common'
+					}
 				}
 			})
-			// Check authorization for Google Meet
-			if (account.provider_type === 'Google Meet') {
+			// Check authorization for Google Meet or Microsoft Teams
+			if (account.provider_type === 'Google Meet' || account.provider_type === 'Microsoft Teams') {
 				await checkAuthorizationStatus()
 			}
 		}
@@ -287,9 +311,12 @@ watch(show, async (val) => {
 				if (acc.provider_type === 'Zoom') {
 					account.account_id = acc.account_id || ''
 				}
+				if (acc.provider_type === 'Microsoft Teams') {
+					account.tenant_id = acc.tenant_id || 'common'
+				}
 			}
 		})
-		if (account.provider_type === 'Google Meet') {
+		if (account.provider_type === 'Google Meet' || account.provider_type === 'Microsoft Teams') {
 			await checkAuthorizationStatus()
 		}
 	} else if (!val) {
@@ -302,6 +329,7 @@ watch(show, async (val) => {
 		account.client_id = ''
 		account.client_secret = ''
 		account.account_id = ''
+		account.tenant_id = 'common'
 		isAuthorized.value = false
 	}
 })
@@ -311,7 +339,11 @@ const checkAuthorizationStatus = async () => {
 
 	isCheckingAuth.value = true
 	try {
-		const result = await call('lms.lms.api.google_meet_check_authorization', {
+		const apiMethod = account.provider_type === 'Microsoft Teams'
+			? 'lms.lms.api.microsoft_teams_check_authorization'
+			: 'lms.lms.api.google_meet_check_authorization'
+
+		const result = await call(apiMethod, {
 			settings_name: props.accountID,
 		})
 		isAuthorized.value = result.is_authorized
@@ -326,9 +358,16 @@ const authorizeProvider = async () => {
 	isAuthorizing.value = true
 	try {
 		const currentUrl = window.location.origin
-		const redirectUri = `${currentUrl}/lms/google/auth`
+		const isTeams = account.provider_type === 'Microsoft Teams'
+		const redirectUri = isTeams
+			? `${currentUrl}/lms/microsoft/auth`
+			: `${currentUrl}/lms/google/auth`
 
-		const result = await call('lms.lms.api.google_meet_get_auth_url', {
+		const apiMethod = isTeams
+			? 'lms.lms.api.microsoft_teams_get_auth_url'
+			: 'lms.lms.api.google_meet_get_auth_url'
+
+		const result = await call(apiMethod, {
 			settings_name: props.accountID,
 			redirect_uri: redirectUri,
 		})
@@ -337,7 +376,7 @@ const authorizeProvider = async () => {
 			// Open authorization URL in a new window
 			const authWindow = window.open(
 				result.authorization_url,
-				'GoogleAuth',
+				isTeams ? 'MicrosoftAuth' : 'GoogleAuth',
 				'width=600,height=700,scrollbars=yes'
 			)
 
@@ -366,7 +405,11 @@ const authorizeProvider = async () => {
 const revokeAuthorization = async () => {
 	isRevoking.value = true
 	try {
-		await call('lms.lms.api.google_meet_revoke_authorization', {
+		const apiMethod = account.provider_type === 'Microsoft Teams'
+			? 'lms.lms.api.microsoft_teams_revoke_authorization'
+			: 'lms.lms.api.google_meet_revoke_authorization'
+
+		await call(apiMethod, {
 			settings_name: props.accountID,
 		})
 		isAuthorized.value = false

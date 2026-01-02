@@ -276,6 +276,11 @@ const routes = [
 		name: 'GoogleAuthCallback',
 		component: () => import('@/pages/GoogleAuthCallback.vue'),
 	},
+	{
+		path: '/microsoft/auth',
+		name: 'MicrosoftAuthCallback',
+		component: () => import('@/pages/MicrosoftAuthCallback.vue'),
+	},
 ]
 
 let router = createRouter({
