@@ -7,30 +7,18 @@
             </svg>
         </template>
 
-        <!-- <template #actions>
-            <router-link v-if="canCreateSubscription()"
-                :to="{ name: 'SubscriptionForm', params: { subscriptionName: 'new' } }">
-                <Button
-                    class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-lg px-4 py-2 rounded-lg font-medium border-0">
-                    <template #prefix>
-                        <Plus class="h-4 w-4 stroke-1.5" />
-                    </template>
-                    {{ __('Create') }}
-                </Button>
-            </router-link>
-        </template> -->
+        <template #actions>
+            <Button
+            v-if="canCreateStream"
+            @click="showCreateModal = true"
+            class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white shadow-lg px-4 py-2 rounded-lg font-medium border-0 flex items-center gap-2"
+          >
+            <Plus class="h-4 w-4 stroke-1.5" />
+            {{ __('New Stream') }}
+          </Button>
+        </template>
     </AppHeader>
   <div class="streams-page container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Live Streams</h1>
-      <button
-        v-if="canCreateStream"
-        @click="showCreateModal = true"
-        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-      >
-        + New Stream
-      </button>
-    </div>
 
     <!-- Loading -->
     <div v-if="loading" class="text-center py-8">

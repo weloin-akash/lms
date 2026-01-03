@@ -22,8 +22,6 @@
     </AppHeader>
 
     <div class="p-5 pb-10">
-
-        <!-- Billing Toggle -->
         <div class="flex justify-center mb-10">
             <div class="inline-flex rounded-lg border p-1">
                 <button class="px-4 py-2 rounded-md text-sm"
@@ -36,7 +34,6 @@
             </div>
         </div>
 
-        <!-- Plans Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
             <div v-for="plan in plans" :key="plan.name"
                 class="rounded-xl border p-6 shadow-sm hover:shadow-lg transition-all flex flex-col h-full relative">
@@ -54,46 +51,52 @@
                         ₹{{ plan.price }}
                     </span>
                     <span class="text-3xl font-bold text-ink-gray-9">
-                        ₹{{ plan.oldPrice ?? plan.price}}
+                        ₹{{ plan.oldPrice ?? plan.price }}
                         <span class="text-sm font-medium text-gray-500">/ {{ billingCycle }}</span>
                     </span>
                 </div>
 
+                <div v-if="plan.access.length" class="mb-4">
+                    <p class="text-sm font-semibold text-gray-700 mb-2">Access Benefits</p>
+                    <ul class="space-y-1 text-sm text-gray-600">
+                        <li v-for="a in plan.access" :key="a"
+                            class="flex items-center gap-2">
+                            <CircleCheck class="w-4 h-4 text-green-600" />
+                            {{ a }}
+                        </li>
+                    </ul>
+                </div>
+
                 <ul class="space-y-2 text-sm mb-6 flex-1">
-                    <li class="flex item-center gap-2 whitespace-nowrap" v-for="feature in plan.features"
-                        :key="feature">
-                        <CircleCheck /> <span>{{ feature }}</span>
+                    <li class="flex items-center gap-2" v-for="feature in plan.features" :key="feature">
+                        <CircleCheck class="w-4 h-4 text-green-600" />
+                        <span>{{ feature }}</span>
                     </li>
                 </ul>
 
-                <Button class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white w-full mt-auto" @click="makePayment(plan)">
+                <Button class="!bg-[#ed8e22] hover:!bg-[#d47a1a] text-white w-full mt-auto"
+                    @click="makePayment(plan)">
                     {{ plan.buttonText }}
                 </Button>
             </div>
         </div>
 
-        <!-- Alerts -->
         <div v-if="paymentLoading"
             class="fixed top-4 right-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-md">
             Processing payment, please wait...
         </div>
 
         <div v-if="paymentError"
-            class="custom-alert-container fixed top-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-md">
+            class="fixed top-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-md">
             {{ paymentError }}
         </div>
-        <!-- <div id="custom-alert-container" class="fixed top-4 right-4 space-y-2 z-50"></div> -->
-
 
         <div v-if="paymentSuccess"
             class="fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md">
             {{ paymentSuccess }}
         </div>
-
     </div>
 
-
-    <!-- Contact Section -->
     <div class="mt-16 to-orange-100 rounded-xl p-8 pb-4 text-center">
         <h1 class="text-2xl font-bold text-black mb-2 text-left">Have Questions About the Subscriptions?</h1>
         <p class="text-gray-700 mb-6 text-left">Our expert can answer all of your questions.</p>
@@ -109,7 +112,7 @@
 </template>
 
 <script setup>
-import { Button, createResource, usePageMeta } from 'frappe-ui'
+import { Button, usePageMeta } from 'frappe-ui'
 import { ref, onMounted, watch } from 'vue'
 import { Plus, CircleCheck, MailIcon } from 'lucide-vue-next'
 import AppHeader from '@/components/AppHeader.vue'
@@ -135,23 +138,8 @@ const showError = (msg) => {
         title: __('Error'),
         message: msg,
         indicator: 'red'
-    });
+    })
     paymentError.value = msg
-}
-
-const extractServerError = (data) => {
-    if (data.message?.error) return data.message.error
-
-    if (data._server_messages) {
-        try {
-            const messages = JSON.parse(data._server_messages)
-            return messages[0]?.message || messages[0] || "An error occurred."
-        } catch {
-            return "An unexpected error occurred."
-        }
-    }
-
-    return data.error || "Something went wrong."
 }
 
 const mapSubscriptionsToPlans = () => {
@@ -172,141 +160,32 @@ const mapSubscriptionsToPlans = () => {
             features: sub.features
                 ? sub.features.split(',').map(f => f.trim())
                 : [],
+            access: sub.access
+                ? sub.access.filter(a => a.is_active).map(a => a.reference_name)
+                : [],
             buttonText: 'Subscribe Now'
         }))
 }
 
 const fetchSubscriptions = async () => {
-    try {
-        const response = await fetch('/api/method/lms.lms.api.get_all_subscription', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Frappe-CSRF-Token': window.csrf_token || ''
-            }
-        })
-
-        const data = await response.json()
-        subscriptions.value = Array.isArray(data.message) ? data.message : []
-
-        // console.log("Fetched Subscriptions:", subscriptions.value)
-
-        mapSubscriptionsToPlans()
-    } catch (err) {
-        showError("Failed to load subscription plans. Please refresh the page.")
-    }
+    const res = await fetch('/api/method/lms.lms.api.get_all_subscription', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Frappe-CSRF-Token': window.csrf_token || ''
+        }
+    })
+    const data = await res.json()
+    subscriptions.value = Array.isArray(data.message) ? data.message : []
+    mapSubscriptionsToPlans()
 }
 
-// fetch subscriptions on page load
 onMounted(fetchSubscriptions)
-
-// subscribe_data = ref(null)
-// const subscription_data = createResource({
-//   url: "frappe.client.get_list",
-//   params: {
-//     doctype: "LMS Subscription",
-//     fields: ["*"]
-//   },
-//   auto: true,
-// })
-// watch(
-//   () => subscription_data.data,
-//   (val) => {
-//     if (Array.isArray(val) && val.length > 0) {
-//       subscribe_data.value = val[0]
-//     }
-//   }
-// )
-// console.log(subscrib_data)
-// update plans when user switches monthly/yearly
 watch(billingCycle, mapSubscriptionsToPlans)
 
-const makePayment = async (plan) => {
-    paymentLoading.value = true
-    paymentError.value = ""
-    paymentSuccess.value = ""
-
-    try {
-        const payload = {
-            plan_name: plan.name,
-            amount: plan.price,
-            duration: billingCycle.value === "monthly" ? "Month" : "Year"
-        }
-
-        const res = await fetch('/api/method/lms.lms.api.create_subscription_order', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Frappe-CSRF-Token': window.csrf_token
-            },
-            body: JSON.stringify(payload)
-        })
-
-        const data = await res.json()
-
-        if (data.message?.error) {
-            showError(extractServerError(data))
-            paymentLoading.value = false
-            return
-        }
-
-        const order = data.message
-        if (!order.order_id) {
-            showError("Invalid order response from server.")
-            paymentLoading.value = false
-            return
-        }
-
-        if (typeof Razorpay === "undefined") {
-            showError("Razorpay script not loaded.")
-            paymentLoading.value = false
-            return
-        }
-
-        const options = {
-            key: order.razorpay_key,
-            amount: order.amount,
-            currency: "INR",
-            name: plan.name,
-            description: "Subscription Payment",
-            order_id: order.order_id,
-            prefill: {
-                name: order.customer_name,
-                email: order.customer_email
-            },
-            handler: async function (response) {
-                try {
-                    await frappe.call({
-                        method: "lms.lms.api.verify_subscription_payment",
-                        args: {
-                            payment_id: response.payment_id,
-                            order_id: order.order_id,
-                            signature: response.razorpay_signature
-                        }
-                    })
-                    paymentSuccess.value = "Payment successful! Thank you for subscribing."
-                } catch {
-                    showError("Payment verification failed.")
-                } finally {
-                    paymentLoading.value = false
-                }
-            },
-            modal: {
-                ondismiss: () => paymentLoading.value = false
-            }
-        }
-
-        new Razorpay(options).open()
-
-    } catch (err) {
-        showError(err.message || "Something went wrong.")
-        paymentLoading.value = false
-    }
-}
+const makePayment = async () => {}
 
 const activeTab = 'bg-[#ed8e22] text-white shadow-sm'
 const inactiveTab = 'text-gray-600 hover:text-black'
-
 const company_mail = 'test@gmail.com'
 </script>
-

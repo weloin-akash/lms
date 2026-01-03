@@ -2653,13 +2653,26 @@ def get_instructor_courses(username):
 
 @frappe.whitelist(allow_guest=True)
 def get_all_subscription():
-    """Fetch all subscriptions ignoring permissions."""
     subscriptions = frappe.db.get_list(
         "LMS Subscription",
         fields=["*"],
         ignore_permissions=True
     )
+
+    for sub in subscriptions:
+        sub["access"] = frappe.db.get_list(
+            "LMS Subscription Access",
+            filters={"subscription": sub["name"]},
+            fields=[
+                "reference_doctype",
+                "reference_name",
+                "is_active"
+            ],
+            ignore_permissions=True
+        )
+
     return subscriptions
+
 
 
 @frappe.whitelist()
